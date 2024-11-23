@@ -2,8 +2,10 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Wifi, Plug, Coffee, Baby, Volume2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface SpaceCardProps {
+  id: string;
   title: string;
   description: string;
   image: string;
@@ -15,6 +17,7 @@ interface SpaceCardProps {
 }
 
 export const SpaceCard = ({
+  id,
   title,
   description,
   image,
@@ -24,6 +27,8 @@ export const SpaceCard = ({
   amenities,
   tags
 }: SpaceCardProps) => {
+  const navigate = useNavigate();
+  
   const getAmenityIcon = (amenity: string) => {
     switch (amenity) {
       case "wifi":
@@ -42,7 +47,7 @@ export const SpaceCard = ({
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
+    <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer" onClick={() => navigate(`/cafe/${id}`)}>
       <div className="relative">
         <img
           src={image}
