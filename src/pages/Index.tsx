@@ -3,6 +3,7 @@ import { SpaceCard } from "@/components/SpaceCard";
 
 const FEATURED_SPACES = [
   {
+    id: "featured-1",
     title: "The Creative Hub",
     description: "A vibrant workspace with natural light and creative atmosphere",
     image: "/lovable-uploads/a60c1e0e-8ca4-4d34-9249-bc543090df63.png",
@@ -13,6 +14,7 @@ const FEATURED_SPACES = [
     tags: ["Quiet Zone", "Baby-Friendly", "24/7 Access"]
   },
   {
+    id: "featured-2",
     title: "Quiet Corner Library",
     description: "Perfect for focused work with dedicated quiet zones",
     image: "/lovable-uploads/a60c1e0e-8ca4-4d34-9249-bc543090df63.png",
@@ -23,6 +25,7 @@ const FEATURED_SPACES = [
     tags: ["Silent Space", "Study Rooms", "Print Service"]
   },
   {
+    id: "featured-3",
     title: "Community Cafe",
     description: "Cozy atmosphere with great coffee and friendly community",
     image: "/lovable-uploads/a60c1e0e-8ca4-4d34-9249-bc543090df63.png",
@@ -54,8 +57,8 @@ const Index = () => {
         <div className="space-y-6">
           <h2 className="text-3xl font-bold">Featured Spaces</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURED_SPACES.map((space, i) => (
-              <SpaceCard key={i} {...space} />
+            {FEATURED_SPACES.map((space) => (
+              <SpaceCard key={space.id} {...space} />
             ))}
           </div>
         </div>
