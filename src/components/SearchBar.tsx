@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 
 interface FilterOption {
   id: string;
@@ -39,8 +39,11 @@ export const SearchBar = () => {
       cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cafe.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilters = selectedFilters.length === 0 || 
-      selectedFilters.every(filter => cafe.amenities.includes(filter));
+    if (selectedFilters.length === 0) return matchesSearch;
+    
+    const matchesFilters = selectedFilters.every(filter => 
+      cafe.amenities.includes(filter)
+    );
 
     return matchesSearch && matchesFilters;
   });
@@ -51,6 +54,7 @@ export const SearchBar = () => {
         ? prev.filter(id => id !== filterId)
         : [...prev, filterId]
     );
+    console.log("Filters updated:", selectedFilters);
   };
 
   const handleCafeSelect = (cafeId: string) => {
@@ -59,7 +63,10 @@ export const SearchBar = () => {
   };
 
   const handleSearch = () => {
-    navigate("/search");
+    console.log("Searching with filters:", selectedFilters);
+    navigate("/search", {
+      state: { filters: selectedFilters, searchTerm }
+    });
   };
 
   return (
