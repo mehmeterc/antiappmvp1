@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell } from "lucide-react";
+import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 interface FilterOption {
   id: string;
@@ -30,6 +31,7 @@ export const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   
   const suggestions = BERLIN_CAFES.filter(cafe => {
     const matchesSearch = searchTerm.length === 0 || 
@@ -54,6 +56,10 @@ export const SearchBar = () => {
   const handleCafeSelect = (cafeId: string) => {
     navigate(`/cafe/${cafeId}`);
     setShowSuggestions(false);
+  };
+
+  const handleSearch = () => {
+    navigate("/search");
   };
 
   return (
@@ -91,27 +97,39 @@ export const SearchBar = () => {
           </Command>
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90"
-          onClick={() => navigate("/search")}
+          variant="outline"
+          size="icon"
+          onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+          className="shrink-0"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
+        <Button 
+          className="bg-primary hover:bg-primary/90 shrink-0"
+          onClick={handleSearch}
         >
           Search
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        {FILTER_OPTIONS.map(({ id, label, icon }) => (
-          <div key={id} className="flex items-center space-x-2">
-            <Checkbox 
-              id={id}
-              checked={selectedFilters.includes(id)}
-              onCheckedChange={() => handleFilterChange(id)}
-            />
-            <label htmlFor={id} className="flex items-center gap-1">
-              {icon} {label}
-            </label>
+      <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+        <CollapsibleContent className="space-y-2">
+          <div className="flex flex-wrap gap-4">
+            {FILTER_OPTIONS.map(({ id, label, icon }) => (
+              <div key={id} className="flex items-center space-x-2">
+                <Checkbox 
+                  id={id}
+                  checked={selectedFilters.includes(id)}
+                  onCheckedChange={() => handleFilterChange(id)}
+                />
+                <label htmlFor={id} className="flex items-center gap-1 cursor-pointer">
+                  {icon} {label}
+                </label>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
