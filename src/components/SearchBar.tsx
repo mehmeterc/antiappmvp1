@@ -1,20 +1,53 @@
 import { useState } from "react";
-import { Wifi, Plug, Coffee, Baby, Volume2 } from "lucide-react";
+import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 
+interface FilterOption {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+const FILTER_OPTIONS: FilterOption[] = [
+  { id: "wifi", label: "WiFi", icon: <Wifi className="w-4 h-4" /> },
+  { id: "power", label: "Power", icon: <Plug className="w-4 h-4" /> },
+  { id: "coffee", label: "Coffee", icon: <Coffee className="w-4 h-4" /> },
+  { id: "quiet", label: "Quiet", icon: <Volume2 className="w-4 h-4" /> },
+  { id: "baby", label: "Baby-friendly", icon: <Baby className="w-4 h-4" /> },
+  { id: "phonebooth", label: "Phone Booth", icon: <Phone className="w-4 h-4" /> },
+  { id: "community", label: "Community Factor", icon: <Users className="w-4 h-4" /> },
+  { id: "nap-pods", label: "Nap Pods", icon: <Bed className="w-4 h-4" /> },
+  { id: "podcast-room", label: "Podcast Room", icon: <Mic className="w-4 h-4" /> },
+  { id: "gym", label: "Gym Access", icon: <Dumbbell className="w-4 h-4" /> },
+];
+
 export const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  const suggestions = searchTerm.length > 0 
-    ? BERLIN_CAFES.filter(cafe => 
-        cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
+  const suggestions = BERLIN_CAFES.filter(cafe => {
+    const matchesSearch = searchTerm.length === 0 || 
+      cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cafe.address.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilters = selectedFilters.length === 0 || 
+      selectedFilters.every(filter => cafe.amenities.includes(filter));
+
+    return matchesSearch && matchesFilters;
+  });
+
+  const handleFilterChange = (filterId: string) => {
+    setSelectedFilters(prev => 
+      prev.includes(filterId)
+        ? prev.filter(id => id !== filterId)
+        : [...prev, filterId]
+    );
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
@@ -28,26 +61,26 @@ export const SearchBar = () => {
                 setSearchTerm(value);
                 setShowSuggestions(true);
               }}
-              onFocus={() => setShowSuggestions(true)}
             />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
-              {showSuggestions && suggestions.length > 0 && (
-                <CommandGroup>
-                  {suggestions.map((cafe) => (
-                    <CommandItem
-                      key={cafe.id}
-                      value={cafe.title}
-                      onSelect={(value) => {
-                        setSearchTerm(value);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {cafe.title}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
+              <CommandGroup>
+                {suggestions.map((cafe) => (
+                  <CommandItem
+                    key={cafe.id}
+                    value={cafe.title}
+                    onSelect={(value) => {
+                      setSearchTerm(value);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{cafe.title}</span>
+                      <span className="text-sm text-gray-500">({cafe.address})</span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
           </Command>
         </div>
@@ -60,36 +93,18 @@ export const SearchBar = () => {
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox id="wifi" />
-          <label htmlFor="wifi" className="flex items-center gap-1">
-            <Wifi className="w-4 h-4" /> WiFi
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="power" />
-          <label htmlFor="power" className="flex items-center gap-1">
-            <Plug className="w-4 h-4" /> Power
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="coffee" />
-          <label htmlFor="coffee" className="flex items-center gap-1">
-            <Coffee className="w-4 h-4" /> Coffee
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="quiet" />
-          <label htmlFor="quiet" className="flex items-center gap-1">
-            <Volume2 className="w-4 h-4" /> Quiet
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="baby" />
-          <label htmlFor="baby" className="flex items-center gap-1">
-            <Baby className="w-4 h-4" /> Baby-friendly
-          </label>
-        </div>
+        {FILTER_OPTIONS.map(({ id, label, icon }) => (
+          <div key={id} className="flex items-center space-x-2">
+            <Checkbox 
+              id={id}
+              checked={selectedFilters.includes(id)}
+              onCheckedChange={() => handleFilterChange(id)}
+            />
+            <label htmlFor={id} className="flex items-center gap-1">
+              {icon} {label}
+            </label>
+          </div>
+        ))}
       </div>
     </div>
   );
