@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
@@ -25,6 +26,7 @@ const FILTER_OPTIONS: FilterOption[] = [
 ];
 
 export const SearchBar = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -49,6 +51,11 @@ export const SearchBar = () => {
     );
   };
 
+  const handleCafeSelect = (cafeId: string) => {
+    navigate(`/cafe/${cafeId}`);
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
       <div className="flex gap-4 relative">
@@ -62,31 +69,30 @@ export const SearchBar = () => {
                 setShowSuggestions(true);
               }}
             />
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {suggestions.map((cafe) => (
-                  <CommandItem
-                    key={cafe.id}
-                    value={cafe.title}
-                    onSelect={(value) => {
-                      setSearchTerm(value);
-                      setShowSuggestions(false);
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{cafe.title}</span>
-                      <span className="text-sm text-gray-500">({cafe.address})</span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
+            {showSuggestions && (
+              <CommandList>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup>
+                  {suggestions.map((cafe) => (
+                    <CommandItem
+                      key={cafe.id}
+                      value={cafe.title}
+                      onSelect={() => handleCafeSelect(cafe.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{cafe.title}</span>
+                        <span className="text-sm text-gray-500">({cafe.address})</span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            )}
           </Command>
         </div>
         <Button 
           className="bg-primary hover:bg-primary/90"
-          onClick={() => setShowSuggestions(false)}
+          onClick={() => navigate("/search")}
         >
           Search
         </Button>
