@@ -1,100 +1,86 @@
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Wifi, Plug, Coffee, Baby, Volume2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Bookmark } from "lucide-react";
+import { useToast } from "./ui/use-toast";
+import { useState } from "react";
 
 interface SpaceCardProps {
   id: string;
   title: string;
   description: string;
-  image: string;
   rating: number;
-  occupancy: string;
-  price: string;
+  imageUrl: string;
+  address: string;
   amenities: string[];
-  tags: string[];
 }
 
-export const SpaceCard = ({
-  id,
-  title,
-  description,
-  image,
-  rating,
-  occupancy,
-  price,
-  amenities,
-  tags
-}: SpaceCardProps) => {
-  const navigate = useNavigate();
-  
-  const getAmenityIcon = (amenity: string) => {
-    switch (amenity) {
-      case "wifi":
-        return <Wifi className="w-4 h-4" />;
-      case "power":
-        return <Plug className="w-4 h-4" />;
-      case "coffee":
-        return <Coffee className="w-4 h-4" />;
-      case "quiet":
-        return <Volume2 className="w-4 h-4" />;
-      case "baby":
-        return <Baby className="w-4 h-4" />;
-      default:
-        return null;
+export const SpaceCard = ({ id, title, description, rating, imageUrl, address, amenities }: SpaceCardProps) => {
+  const { toast } = useToast();
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking the bookmark
+    setIsSaved(!isSaved);
+    
+    // In a real app, this would interact with a backend
+    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
+    if (!isSaved) {
+      localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, imageUrl, address, amenities }]));
+      toast({
+        title: "Cafe saved!",
+        description: "Added to your saved spaces.",
+      });
+    } else {
+      localStorage.setItem('savedCafes', JSON.stringify(savedCafes.filter((cafe: { id: string }) => cafe.id !== id)));
+      toast({
+        title: "Cafe removed",
+        description: "Removed from your saved spaces.",
+      });
     }
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer" onClick={() => navigate(`/cafe/${id}`)}>
-      <div className="relative">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-2 right-2 bg-white rounded-full px-2 py-1 flex items-center gap-1">
-          <span className="text-yellow-400">★</span>
-          <span className="font-medium">{rating}</span>
-        </div>
-      </div>
-      
-      <div className="p-4 space-y-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="font-semibold text-lg">{title}</h3>
-            <p className="text-sm text-gray-600">{description}</p>
+    <Link to={`/cafe/${id}`}>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <CardHeader className="p-0">
+          <div className="relative h-48">
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`absolute top-2 right-2 bg-white/80 hover:bg-white ${
+                isSaved ? 'text-primary' : 'text-gray-500'
+              }`}
+              onClick={handleSave}
+            >
+              <Bookmark className="h-5 w-5" fill={isSaved ? "currentColor" : "none"} />
+            </Button>
           </div>
-          <Badge variant={occupancy.includes("Full") ? "destructive" : "secondary"}>
-            {occupancy}
-          </Badge>
-        </div>
-
-        <div className="flex gap-2">
-          {amenities.map((amenity, i) => (
-            <span key={i} className="text-gray-600">
-              {getAmenityIcon(amenity)}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex gap-2">
-          {tags.map((tag, i) => (
-            <Badge key={i} variant="outline">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="flex justify-between items-center pt-2">
-          <span className="font-medium">{price}</span>
-          <div className="space-x-2">
-            <Button variant="outline">Tour</Button>
-            <Button>Book Now</Button>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <Badge variant="secondary">★ {rating}</Badge>
           </div>
-        </div>
-      </div>
-    </Card>
+          <p className="text-sm text-gray-600 mb-2">{address}</p>
+          <p className="text-sm text-gray-500 line-clamp-2">{description}</p>
+        </CardContent>
+        <CardFooter className="p-4 pt-0">
+          <div className="flex flex-wrap gap-2">
+            {amenities.slice(0, 3).map((amenity) => (
+              <Badge key={amenity} variant="outline">
+                {amenity}
+              </Badge>
+            ))}
+          </div>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 };

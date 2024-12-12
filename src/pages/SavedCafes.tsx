@@ -1,19 +1,28 @@
+import { useEffect, useState } from "react";
 import { SpaceCard } from "@/components/SpaceCard";
-import { BERLIN_CAFES } from "@/data/mockCafes";
 
 const SavedCafes = () => {
-  // Mock saved cafes (first 2 from our mock data)
-  const savedCafes = BERLIN_CAFES.slice(0, 2);
+  const [savedCafes, setSavedCafes] = useState<any[]>([]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('savedCafes') || '[]');
+    setSavedCafes(saved);
+  }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Your Saved Spaces</h1>
-      
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {savedCafes.map((cafe) => (
-          <SpaceCard key={cafe.id} {...cafe} />
-        ))}
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Saved Spaces</h1>
+      {savedCafes.length === 0 ? (
+        <div className="text-center text-gray-500 py-8">
+          No saved spaces yet. Start exploring to save your favorite cafes!
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {savedCafes.map((cafe) => (
+            <SpaceCard key={cafe.id} {...cafe} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

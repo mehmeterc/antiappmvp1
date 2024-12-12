@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import SavedCafes from "./pages/SavedCafes";
+import History from "./pages/History";
 import Login from "./pages/Login";
 import CafeDetails from "./pages/CafeDetails";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/search" element={<Search />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/saved" element={<SavedCafes />} />
+            <Route path="/history" element={<History />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cafe/:id" element={<CafeDetails />} />
           </Routes>
