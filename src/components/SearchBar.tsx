@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell, Settings } from "lucide-react";
+import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell, Settings, EuroIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
+import { Slider } from "./ui/slider";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
@@ -32,6 +33,7 @@ export const SearchBar = () => {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 100]);
   
   const suggestions = BERLIN_CAFES.filter(cafe => {
     const matchesSearch = searchTerm.length === 0 || 
@@ -39,13 +41,14 @@ export const SearchBar = () => {
       cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cafe.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (selectedFilters.length === 0) return matchesSearch;
-    
-    const matchesFilters = selectedFilters.every(filter => 
-      cafe.amenities.includes(filter)
-    );
+    const matchesFilters = selectedFilters.length === 0 || 
+      selectedFilters.every(filter => cafe.amenities.includes(filter));
 
-    return matchesSearch && matchesFilters;
+    // Convert price indicators (€, €€, €€€) to numeric values
+    const priceValue = (cafe.price.match(/€/g) || []).length * 33.33;
+    const matchesPrice = priceValue >= priceRange[0] && priceValue <= priceRange[1];
+
+    return matchesSearch && matchesFilters && matchesPrice;
   });
 
   const handleFilterChange = (filterId: string) => {
@@ -54,7 +57,6 @@ export const SearchBar = () => {
         ? prev.filter(id => id !== filterId)
         : [...prev, filterId]
     );
-    console.log("Filters updated:", selectedFilters);
   };
 
   const handleCafeSelect = (cafeId: string) => {
@@ -63,9 +65,12 @@ export const SearchBar = () => {
   };
 
   const handleSearch = () => {
-    console.log("Searching with filters:", selectedFilters);
     navigate("/search", {
-      state: { filters: selectedFilters, searchTerm }
+      state: { 
+        filters: selectedFilters, 
+        searchTerm,
+        priceRange 
+      }
     });
   };
 
@@ -92,9 +97,12 @@ export const SearchBar = () => {
                       value={cafe.title}
                       onSelect={() => handleCafeSelect(cafe.id)}
                     >
-                      <div className="flex items-center gap-2">
-                        <span>{cafe.title}</span>
-                        <span className="text-sm text-gray-500">({cafe.address})</span>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <span>{cafe.title}</span>
+                          <span className="text-sm text-gray-500">({cafe.address})</span>
+                        </div>
+                        <span className="text-primary font-semibold">{cafe.price}</span>
                       </div>
                     </CommandItem>
                   ))}
@@ -120,20 +128,42 @@ export const SearchBar = () => {
       </div>
 
       <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-        <CollapsibleContent className="space-y-2">
-          <div className="flex flex-wrap gap-4">
-            {FILTER_OPTIONS.map(({ id, label, icon }) => (
-              <div key={id} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={id}
-                  checked={selectedFilters.includes(id)}
-                  onCheckedChange={() => handleFilterChange(id)}
-                />
-                <label htmlFor={id} className="flex items-center gap-1 cursor-pointer">
-                  {icon} {label}
-                </label>
+        <CollapsibleContent className="space-y-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <EuroIcon className="w-4 h-4" />
+                Price Range
+              </label>
+              <Slider
+                defaultValue={[0, 100]}
+                max={100}
+                step={1}
+                value={priceRange}
+                onValueChange={setPriceRange}
+                className="w-full"
+              />
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>€</span>
+                <span>€€</span>
+                <span>€€€</span>
               </div>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap gap-4">
+              {FILTER_OPTIONS.map(({ id, label, icon }) => (
+                <div key={id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={id}
+                    checked={selectedFilters.includes(id)}
+                    onCheckedChange={() => handleFilterChange(id)}
+                  />
+                  <label htmlFor={id} className="flex items-center gap-1 cursor-pointer">
+                    {icon} {label}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
         </CollapsibleContent>
       </Collapsible>
