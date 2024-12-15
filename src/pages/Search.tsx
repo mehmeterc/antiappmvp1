@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Map as MapIcon } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import { CafeMap } from "@/components/CafeMap";
 
 const Search = () => {
   const location = useLocation();
@@ -40,12 +41,7 @@ const Search = () => {
       </div>
 
       {showMap ? (
-        <div className="w-full h-[600px] bg-gray-200 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <MapIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600">Mock Map View - In a real app, this would be an interactive map</p>
-          </div>
-        </div>
+        <CafeMap cafes={filteredCafes} />
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCafes.map((cafe) => (
