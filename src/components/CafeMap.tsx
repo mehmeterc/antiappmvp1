@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Icon } from 'leaflet';
+import { Icon, LatLngExpression } from 'leaflet';
 import { useNavigate } from 'react-router-dom';
 
 // Fix for default marker icon in react-leaflet
@@ -24,33 +24,40 @@ interface CafeMapProps {
 export const CafeMap = ({ cafes }: CafeMapProps) => {
   const navigate = useNavigate();
   
+  // Define center coordinates as LatLngExpression
+  const center: LatLngExpression = [52.520008, 13.404954];
+  
   return (
     <MapContainer
-      center={[52.520008, 13.404954]} // Berlin center coordinates
+      center={center}
       zoom={12}
       style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}
+      scrollWheelZoom={false}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {cafes.map((cafe) => (
-        <Marker
-          key={cafe.id}
-          position={[cafe.coordinates.lat, cafe.coordinates.lng]}
-          icon={icon}
-          eventHandlers={{
-            click: () => navigate(`/cafe/${cafe.id}`),
-          }}
-        >
-          <Popup>
-            <div className="p-2">
-              <h3 className="font-semibold">{cafe.title}</h3>
-              <p className="text-sm text-gray-600">{cafe.address}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {cafes.map((cafe) => {
+        const position: LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
+        return (
+          <Marker
+            key={cafe.id}
+            position={position}
+            icon={icon}
+            eventHandlers={{
+              click: () => navigate(`/cafe/${cafe.id}`),
+            }}
+          >
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-semibold">{cafe.title}</h3>
+                <p className="text-sm text-gray-600">{cafe.address}</p>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 };
