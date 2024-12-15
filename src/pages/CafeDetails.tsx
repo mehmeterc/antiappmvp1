@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro } from "lucide-react";
 import { toast } from "sonner";
+import { Layout } from "@/components/Layout";
 
 const CafeDetails = () => {
   const { id } = useParams();
@@ -35,7 +36,7 @@ const CafeDetails = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <Layout>
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="relative h-96">
           <img
@@ -94,7 +95,7 @@ const CafeDetails = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
