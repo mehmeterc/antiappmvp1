@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useNavigate } from 'react-router-dom';
+import type { Map as LeafletMap } from 'leaflet';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,7 +27,7 @@ export const CafeMap = ({ cafes }: CafeMapProps) => {
   return (
     <div style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}>
       <MapContainer 
-        center={[52.520008, 13.404954]} 
+        center={[52.520008, 13.404954] as L.LatLngExpression} 
         zoom={12} 
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
@@ -38,7 +39,7 @@ export const CafeMap = ({ cafes }: CafeMapProps) => {
         {cafes.map((cafe) => (
           <Marker
             key={cafe.id}
-            position={[cafe.coordinates.lat, cafe.coordinates.lng]}
+            position={[cafe.coordinates.lat, cafe.coordinates.lng] as L.LatLngExpression}
             eventHandlers={{
               click: () => navigate(`/cafe/${cafe.id}`),
             }}
