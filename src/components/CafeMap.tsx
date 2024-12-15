@@ -23,36 +23,35 @@ interface CafeMapProps {
 export const CafeMap = ({ cafes }: CafeMapProps) => {
   const navigate = useNavigate();
   
-  // Berlin center coordinates
-  const defaultCenter = { lat: 52.520008, lng: 13.404954 };
-  
   return (
-    <MapContainer
-      center={[defaultCenter.lat, defaultCenter.lng]}
-      zoom={12}
-      style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}
-      scrollWheelZoom={false}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {cafes.map((cafe) => (
-        <Marker
-          key={cafe.id}
-          position={[cafe.coordinates.lat, cafe.coordinates.lng]}
-          eventHandlers={{
-            click: () => navigate(`/cafe/${cafe.id}`),
-          }}
-        >
-          <Popup>
-            <div className="p-2">
-              <h3 className="font-semibold">{cafe.title}</h3>
-              <p className="text-sm text-gray-600">{cafe.address}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}>
+      <MapContainer 
+        center={[52.520008, 13.404954]} 
+        zoom={12} 
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={false}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {cafes.map((cafe) => (
+          <Marker
+            key={cafe.id}
+            position={[cafe.coordinates.lat, cafe.coordinates.lng]}
+            eventHandlers={{
+              click: () => navigate(`/cafe/${cafe.id}`),
+            }}
+          >
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-semibold">{cafe.title}</h3>
+                <p className="text-sm text-gray-600">{cafe.address}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 };
