@@ -4,14 +4,14 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Bookmark } from "lucide-react";
 import { useToast } from "./ui/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SpaceCardProps {
   id: string;
   title: string;
   description: string;
   rating: number;
-  image: string;  // Changed from imageUrl to image
+  image: string;
   address: string;
   amenities: string[];
 }
@@ -19,6 +19,13 @@ interface SpaceCardProps {
 export const SpaceCard = ({ id, title, description, rating, image, address, amenities }: SpaceCardProps) => {
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
+
+  // Check if the cafe is saved when component mounts
+  useEffect(() => {
+    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
+    const isAlreadySaved = savedCafes.some((cafe: { id: string }) => cafe.id === id);
+    setIsSaved(isAlreadySaved);
+  }, [id]);
 
   const handleSave = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the bookmark
@@ -47,7 +54,7 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
         <CardHeader className="p-0">
           <div className="relative h-48">
             <img
-              src={image}  // Changed from imageUrl to image
+              src={image}
               alt={title}
               className="w-full h-full object-cover"
             />
