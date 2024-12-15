@@ -11,12 +11,12 @@ interface SpaceCardProps {
   title: string;
   description: string;
   rating: number;
-  imageUrl: string;
+  image: string;  // Changed from imageUrl to image
   address: string;
   amenities: string[];
 }
 
-export const SpaceCard = ({ id, title, description, rating, imageUrl, address, amenities }: SpaceCardProps) => {
+export const SpaceCard = ({ id, title, description, rating, image, address, amenities }: SpaceCardProps) => {
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
 
@@ -27,7 +27,7 @@ export const SpaceCard = ({ id, title, description, rating, imageUrl, address, a
     // In a real app, this would interact with a backend
     const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
     if (!isSaved) {
-      localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, imageUrl, address, amenities }]));
+      localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, image, address, amenities }]));
       toast({
         title: "Cafe saved!",
         description: "Added to your saved spaces.",
@@ -47,7 +47,7 @@ export const SpaceCard = ({ id, title, description, rating, imageUrl, address, a
         <CardHeader className="p-0">
           <div className="relative h-48">
             <img
-              src={imageUrl}
+              src={image}  // Changed from imageUrl to image
               alt={title}
               className="w-full h-full object-cover"
             />
