@@ -23,19 +23,19 @@ interface CafeMapProps {
 
 export const CafeMap = ({ cafes }: CafeMapProps) => {
   const navigate = useNavigate();
-  const defaultCenter: L.LatLngExpression = [52.520008, 13.404954];
+  const center: L.LatLngExpression = [52.520008, 13.404954];
   
   return (
     <div style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}>
       <MapContainer 
-        defaultCenter={defaultCenter}
+        center={center}
         zoom={12} 
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attributionUrl='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {cafes.map((cafe) => (
           <Marker
