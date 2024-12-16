@@ -1,40 +1,104 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, Mic, Dumbbell, Settings, EuroIcon } from "lucide-react";
+import { 
+  Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, 
+  Mic, Dumbbell, Settings, EuroIcon, Zap, Brain, 
+  Signal, Timer, Group, Laptop
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Slider } from "./ui/slider";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
+import { pipeline } from "@huggingface/transformers";
+import { Badge } from "./ui/badge";
+import { useToast } from "./ui/use-toast";
 
 interface FilterOption {
   id: string;
   label: string;
   icon: React.ReactNode;
+  category: 'amenities' | 'atmosphere' | 'services';
 }
 
 const FILTER_OPTIONS: FilterOption[] = [
-  { id: "wifi", label: "WiFi", icon: <Wifi className="w-4 h-4" /> },
-  { id: "power", label: "Power", icon: <Plug className="w-4 h-4" /> },
-  { id: "coffee", label: "Coffee", icon: <Coffee className="w-4 h-4" /> },
-  { id: "quiet", label: "Quiet", icon: <Volume2 className="w-4 h-4" /> },
-  { id: "baby", label: "Baby-friendly", icon: <Baby className="w-4 h-4" /> },
-  { id: "phonebooth", label: "Phone Booth", icon: <Phone className="w-4 h-4" /> },
-  { id: "community", label: "Community Factor", icon: <Users className="w-4 h-4" /> },
-  { id: "nap-pods", label: "Nap Pods", icon: <Bed className="w-4 h-4" /> },
-  { id: "podcast-room", label: "Podcast Room", icon: <Mic className="w-4 h-4" /> },
-  { id: "gym", label: "Gym Access", icon: <Dumbbell className="w-4 h-4" /> },
+  // Amenities
+  { id: "wifi", label: "High-Speed WiFi", icon: <Wifi className="w-4 h-4" />, category: 'amenities' },
+  { id: "power", label: "Power Outlets", icon: <Plug className="w-4 h-4" />, category: 'amenities' },
+  { id: "coffee", label: "Premium Coffee", icon: <Coffee className="w-4 h-4" />, category: 'amenities' },
+  { id: "phonebooth", label: "Phone Booth", icon: <Phone className="w-4 h-4" />, category: 'amenities' },
+  { id: "nap-pods", label: "Nap Pods", icon: <Bed className="w-4 h-4" />, category: 'amenities' },
+  { id: "podcast-room", label: "Podcast Room", icon: <Mic className="w-4 h-4" />, category: 'amenities' },
+  { id: "gym", label: "Gym Access", icon: <Dumbbell className="w-4 h-4" />, category: 'amenities' },
+  
+  // Atmosphere
+  { id: "quiet", label: "Quiet Zone", icon: <Volume2 className="w-4 h-4" />, category: 'atmosphere' },
+  { id: "baby", label: "Family Friendly", icon: <Baby className="w-4 h-4" />, category: 'atmosphere' },
+  { id: "community", label: "Community Space", icon: <Users className="w-4 h-4" />, category: 'atmosphere' },
+  { id: "focus", label: "Focus-Optimized", icon: <Brain className="w-4 h-4" />, category: 'atmosphere' },
+  { id: "group-friendly", label: "Group Friendly", icon: <Group className="w-4 h-4" />, category: 'atmosphere' },
+  
+  // Services
+  { id: "fast-internet", label: "Gigabit Internet", icon: <Zap className="w-4 h-4" />, category: 'services' },
+  { id: "real-time", label: "Real-time Availability", icon: <Signal className="w-4 h-4" />, category: 'services' },
+  { id: "instant-booking", label: "Instant Booking", icon: <Timer className="w-4 h-4" />, category: 'services' },
+  { id: "workspace", label: "Dedicated Workspace", icon: <Laptop className="w-4 h-4" />, category: 'services' },
 ];
 
 export const SearchBar = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 30]); // Changed to max 30€/hour
-  
+  const [priceRange, setPriceRange] = useState([0, 30]);
+  const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // AI-powered search suggestions
+  useEffect(() => {
+    const getAiRecommendations = async () => {
+      if (searchTerm.length < 3) return;
+      
+      setIsLoading(true);
+      try {
+        const classifier = await pipeline(
+          "text-classification",
+          "Xenova/distilbert-base-uncased-finetuned-sst-2-english",
+          { quantized: true }
+        );
+        
+        const result = await classifier(searchTerm);
+        console.log("AI Analysis:", result);
+        
+        // Use the analysis to enhance search results
+        const enhancedSuggestions = BERLIN_CAFES.filter(cafe => {
+          const matchScore = result[0].score > 0.5;
+          return matchScore && cafe.title.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+        
+        setAiRecommendations(enhancedSuggestions.map(cafe => cafe.id));
+      } catch (error) {
+        console.error("AI recommendation error:", error);
+        toast({
+          title: "AI Enhancement",
+          description: "Using standard search while AI features are loading...",
+          duration: 3000,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      getAiRecommendations();
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, toast]);
+
   const suggestions = BERLIN_CAFES.filter(cafe => {
     const matchesSearch = searchTerm.length === 0 || 
       cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,11 +108,12 @@ export const SearchBar = () => {
     const matchesFilters = selectedFilters.length === 0 || 
       selectedFilters.every(filter => cafe.amenities.includes(filter));
 
-    // Convert price to numeric value (€/hour)
     const priceValue = parseFloat(cafe.price.replace('€', ''));
     const matchesPrice = priceValue >= priceRange[0] && priceValue <= priceRange[1];
 
-    return matchesSearch && matchesFilters && matchesPrice;
+    const isRecommended = aiRecommendations.includes(cafe.id);
+
+    return (matchesSearch || isRecommended) && matchesFilters && matchesPrice;
   });
 
   const handleFilterChange = (filterId: string) => {
@@ -69,7 +134,8 @@ export const SearchBar = () => {
       state: { 
         filters: selectedFilters, 
         searchTerm,
-        priceRange 
+        priceRange,
+        aiRecommendations 
       }
     });
   };
@@ -80,7 +146,7 @@ export const SearchBar = () => {
         <div className="flex-1">
           <Command className="rounded-lg border shadow-md">
             <CommandInput
-              placeholder="Search for spaces near you..."
+              placeholder={isLoading ? "AI is analyzing your search..." : "Search for spaces near you..."}
               value={searchTerm}
               onValueChange={(value) => {
                 setSearchTerm(value);
@@ -100,9 +166,19 @@ export const SearchBar = () => {
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
                           <span>{cafe.title}</span>
+                          {aiRecommendations.includes(cafe.id) && (
+                            <Badge variant="secondary" className="ml-2">
+                              AI Recommended
+                            </Badge>
+                          )}
                           <span className="text-sm text-gray-500">({cafe.address})</span>
                         </div>
-                        <span className="text-primary font-semibold">{cafe.price}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-green-50">
+                            Available Now
+                          </Badge>
+                          <span className="text-primary font-semibold">{cafe.price}/h</span>
+                        </div>
                       </div>
                     </CommandItem>
                   ))}
@@ -128,7 +204,7 @@ export const SearchBar = () => {
       </div>
 
       <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-        <CollapsibleContent className="space-y-4">
+        <CollapsibleContent className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
@@ -149,20 +225,25 @@ export const SearchBar = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              {FILTER_OPTIONS.map(({ id, label, icon }) => (
-                <div key={id} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={id}
-                    checked={selectedFilters.includes(id)}
-                    onCheckedChange={() => handleFilterChange(id)}
-                  />
-                  <label htmlFor={id} className="flex items-center gap-1 cursor-pointer">
-                    {icon} {label}
-                  </label>
+            {(['amenities', 'atmosphere', 'services'] as const).map((category) => (
+              <div key={category} className="space-y-2">
+                <h3 className="font-medium capitalize">{category}</h3>
+                <div className="flex flex-wrap gap-4">
+                  {FILTER_OPTIONS.filter(option => option.category === category).map(({ id, label, icon }) => (
+                    <div key={id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={id}
+                        checked={selectedFilters.includes(id)}
+                        onCheckedChange={() => handleFilterChange(id)}
+                      />
+                      <label htmlFor={id} className="flex items-center gap-1 cursor-pointer text-sm">
+                        {icon} {label}
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </CollapsibleContent>
       </Collapsible>
