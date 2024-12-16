@@ -11,9 +11,9 @@ import { Slider } from "./ui/slider";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./ui/command";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
-import { pipeline } from "@huggingface/transformers";
 import { Badge } from "./ui/badge";
 import { useToast } from "./ui/use-toast";
+import { analyzeSearchTerm } from "@/utils/aiUtils";
 
 interface FilterOption {
   id: string;
@@ -57,25 +57,18 @@ export const SearchBar = () => {
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // AI-powered search suggestions
   useEffect(() => {
     const getAiRecommendations = async () => {
       if (searchTerm.length < 3) return;
       
       setIsLoading(true);
       try {
-        const classifier = await pipeline(
-          "text-classification",
-          "Xenova/distilbert-base-uncased-finetuned-sst-2-english",
-          { quantized: true }
-        );
-        
-        const result = await classifier(searchTerm);
-        console.log("AI Analysis:", result);
+        const analysis = await analyzeSearchTerm(searchTerm);
+        console.log("Search term analysis:", analysis);
         
         // Use the analysis to enhance search results
         const enhancedSuggestions = BERLIN_CAFES.filter(cafe => {
-          const matchScore = result[0].score > 0.5;
+          const matchScore = analysis.confidence > 0.5;
           return matchScore && cafe.title.toLowerCase().includes(searchTerm.toLowerCase());
         });
         
