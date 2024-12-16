@@ -33,7 +33,7 @@ export const SearchBar = () => {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 30]); // Changed to max 30€/hour
   
   const suggestions = BERLIN_CAFES.filter(cafe => {
     const matchesSearch = searchTerm.length === 0 || 
@@ -44,8 +44,8 @@ export const SearchBar = () => {
     const matchesFilters = selectedFilters.length === 0 || 
       selectedFilters.every(filter => cafe.amenities.includes(filter));
 
-    // Convert price indicators (€, €€, €€€) to numeric values
-    const priceValue = (cafe.price.match(/€/g) || []).length * 33.33;
+    // Convert price to numeric value (€/hour)
+    const priceValue = parseFloat(cafe.price.replace('€', ''));
     const matchesPrice = priceValue >= priceRange[0] && priceValue <= priceRange[1];
 
     return matchesSearch && matchesFilters && matchesPrice;
@@ -133,20 +133,19 @@ export const SearchBar = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <EuroIcon className="w-4 h-4" />
-                Price Range
+                Price Range (€/hour)
               </label>
               <Slider
-                defaultValue={[0, 100]}
-                max={100}
+                defaultValue={[0, 30]}
+                max={30}
                 step={1}
                 value={priceRange}
                 onValueChange={setPriceRange}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-gray-500">
-                <span>€</span>
-                <span>€€</span>
-                <span>€€€</span>
+                <span>{priceRange[0]}€/h</span>
+                <span>{priceRange[1]}€/h</span>
               </div>
             </div>
 
