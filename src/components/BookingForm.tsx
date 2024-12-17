@@ -34,7 +34,13 @@ export const BookingForm = ({ cafeId, price }: BookingFormProps) => {
     });
   };
 
-  const priceValue = parseFloat(price.replace('€', ''));
+  // Convert price string (e.g., "€€" or "€€€") to a number
+  const getPriceValue = (priceStr: string) => {
+    const priceLevel = priceStr.replace(/[^€]/g, '').length;
+    return priceLevel * 10; // €€ = 20, €€€ = 30
+  };
+
+  const priceValue = getPriceValue(price);
   const totalPrice = priceValue * duration;
 
   return (
@@ -82,7 +88,7 @@ export const BookingForm = ({ cafeId, price }: BookingFormProps) => {
         <div>
           <p className="text-sm text-gray-500">Total Price</p>
           <p className="text-2xl font-bold">{totalPrice}€</p>
-          <p className="text-sm text-gray-500">({price}/hour × {duration} hours)</p>
+          <p className="text-sm text-gray-500">({priceValue}€/hour × {duration} hours)</p>
         </div>
         <Button 
           size="lg"

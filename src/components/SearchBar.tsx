@@ -26,16 +26,21 @@ export const SearchBar = () => {
   // Handle search term changes
   useEffect(() => {
     console.log('Search term changed:', searchTerm);
-    const results = searchCafes(
-      BERLIN_CAFES,
-      searchTerm,
-      selectedFilters,
-      priceRange,
-      aiRecommendations
-    );
-    console.log('Updated suggestions:', results.length);
-    setSuggestions(results);
-    setShowSuggestions(true);
+    if (searchTerm.length > 0) {
+      const results = searchCafes(
+        BERLIN_CAFES,
+        searchTerm,
+        selectedFilters,
+        priceRange,
+        aiRecommendations
+      );
+      console.log('Updated suggestions:', results.length);
+      setSuggestions(results);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
   }, [searchTerm, selectedFilters, priceRange, aiRecommendations]);
 
   // Handle AI recommendations
@@ -108,7 +113,7 @@ export const SearchBar = () => {
               value={searchTerm}
               onValueChange={setSearchTerm}
             />
-            {showSuggestions && suggestions.length > 0 && (
+            {showSuggestions && suggestions.length > 0 && searchTerm.length > 0 && (
               <SearchResults
                 suggestions={suggestions}
                 aiRecommendations={aiRecommendations}
