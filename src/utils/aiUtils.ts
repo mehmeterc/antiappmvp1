@@ -22,8 +22,8 @@ export const analyzeSearchTerm = async (searchTerm: string): Promise<AIAnalysisR
     const result = await classifier(searchTerm);
     console.log("AI analysis result:", result);
 
-    // Ensure we're working with a single result
-    const output = Array.isArray(result) ? result[0] : result as TextClassificationSingle;
+    // Type assertion to handle the result
+    const output = (Array.isArray(result) ? result[0] : result) as TextClassificationSingle;
     
     return {
       confidence: output.label === "POSITIVE" ? output.score : 1 - output.score,
