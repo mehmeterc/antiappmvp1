@@ -1,8 +1,13 @@
-import { pipeline, TextClassificationOutput } from "@huggingface/transformers";
+import { pipeline } from "@huggingface/transformers";
 
 export interface AIAnalysisResult {
   confidence: number;
   label: string;
+}
+
+interface TextClassificationSingle {
+  label: string;
+  score: number;
 }
 
 export const analyzeSearchTerm = async (searchTerm: string): Promise<AIAnalysisResult> => {
@@ -17,8 +22,8 @@ export const analyzeSearchTerm = async (searchTerm: string): Promise<AIAnalysisR
     const result = await classifier(searchTerm);
     console.log("AI analysis result:", result);
 
-    // Handle both array and single result cases
-    const output = Array.isArray(result) ? result[0] : result;
+    // Ensure we're working with a single result
+    const output = Array.isArray(result) ? result[0] : result as TextClassificationSingle;
     
     return {
       confidence: output.label === "POSITIVE" ? output.score : 1 - output.score,
