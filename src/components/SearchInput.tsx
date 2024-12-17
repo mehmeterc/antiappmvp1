@@ -1,4 +1,4 @@
-import { Command, CommandInput } from "./ui/command";
+import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
 
@@ -26,20 +26,23 @@ export const SearchInput = ({
   return (
     <Command 
       className="rounded-lg border shadow-md"
-      shouldFilter={false} // Prevent internal filtering since we handle it ourselves
+      shouldFilter={false}
     >
       <CommandInput
         placeholder={isLoading ? "AI is analyzing your search..." : "Search for spaces near you..."}
         value={searchTerm}
         onValueChange={onSearchTermChange}
       />
-      {showSuggestions && suggestions && suggestions.length > 0 && searchTerm.length > 0 && (
-        <SearchResults
-          suggestions={suggestions}
-          aiRecommendations={aiRecommendations}
-          onCafeSelect={onCafeSelect}
-        />
-      )}
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && searchTerm.length > 0 && (
+          <SearchResults
+            suggestions={suggestions}
+            aiRecommendations={aiRecommendations}
+            onCafeSelect={onCafeSelect}
+          />
+        )}
+      </CommandList>
     </Command>
   );
 };
