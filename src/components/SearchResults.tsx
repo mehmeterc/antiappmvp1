@@ -8,12 +8,23 @@ interface SearchResultsProps {
   onCafeSelect: (cafeId: string) => void;
 }
 
-export const SearchResults = ({ suggestions, aiRecommendations, onCafeSelect }: SearchResultsProps) => {
+export const SearchResults = ({ 
+  suggestions = [], 
+  aiRecommendations = [], 
+  onCafeSelect 
+}: SearchResultsProps) => {
+  // Ensure we have valid arrays to work with
+  const validSuggestions = Array.isArray(suggestions) ? suggestions : [];
+  const validRecommendations = Array.isArray(aiRecommendations) ? aiRecommendations : [];
+
+  console.log('Rendering SearchResults with suggestions:', validSuggestions.length);
+  console.log('AI recommendations:', validRecommendations.length);
+
   return (
     <CommandList>
       <CommandEmpty>No results found.</CommandEmpty>
       <CommandGroup>
-        {suggestions.map((cafe) => (
+        {validSuggestions.map((cafe) => (
           <CommandItem
             key={cafe.id}
             value={cafe.title}
@@ -22,7 +33,7 @@ export const SearchResults = ({ suggestions, aiRecommendations, onCafeSelect }: 
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
                 <span>{cafe.title}</span>
-                {aiRecommendations.includes(cafe.id) && (
+                {validRecommendations.includes(cafe.id) && (
                   <Badge variant="secondary" className="ml-2">
                     AI Recommended
                   </Badge>
