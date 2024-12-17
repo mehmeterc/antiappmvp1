@@ -13,16 +13,21 @@ interface SearchInputProps {
 }
 
 export const SearchInput = ({
-  searchTerm,
+  searchTerm = "",
   onSearchTermChange,
-  showSuggestions,
+  showSuggestions = false,
   suggestions = [],
   aiRecommendations = [],
   onCafeSelect,
-  isLoading,
+  isLoading = false,
 }: SearchInputProps) => {
+  console.log('SearchInput render - suggestions:', suggestions?.length ?? 0);
+  
   return (
-    <Command className="rounded-lg border shadow-md">
+    <Command 
+      className="rounded-lg border shadow-md"
+      shouldFilter={false} // Prevent internal filtering since we handle it ourselves
+    >
       <CommandInput
         placeholder={isLoading ? "AI is analyzing your search..." : "Search for spaces near you..."}
         value={searchTerm}
