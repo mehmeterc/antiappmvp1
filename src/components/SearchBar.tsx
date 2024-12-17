@@ -21,10 +21,30 @@ export const SearchBar = () => {
   const [priceRange, setPriceRange] = useState([0, 30]);
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState(BERLIN_CAFES);
 
+  // Handle search term changes
+  useEffect(() => {
+    console.log('Search term changed:', searchTerm);
+    const results = searchCafes(
+      BERLIN_CAFES,
+      searchTerm,
+      selectedFilters,
+      priceRange,
+      aiRecommendations
+    );
+    console.log('Updated suggestions:', results.length);
+    setSuggestions(results);
+    setShowSuggestions(true);
+  }, [searchTerm, selectedFilters, priceRange, aiRecommendations]);
+
+  // Handle AI recommendations
   useEffect(() => {
     const getAiRecommendations = async () => {
-      if (searchTerm.length < 2) return;
+      if (searchTerm.length < 2) {
+        setAiRecommendations([]);
+        return;
+      }
       
       setIsLoading(true);
       try {
@@ -53,14 +73,6 @@ export const SearchBar = () => {
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, toast]);
-
-  const suggestions = searchCafes(
-    BERLIN_CAFES,
-    searchTerm,
-    selectedFilters,
-    priceRange,
-    aiRecommendations
-  );
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilters(prev => 
@@ -94,12 +106,9 @@ export const SearchBar = () => {
             <CommandInput
               placeholder={isLoading ? "AI is analyzing your search..." : "Search for spaces near you..."}
               value={searchTerm}
-              onValueChange={(value) => {
-                setSearchTerm(value);
-                setShowSuggestions(true);
-              }}
+              onValueChange={setSearchTerm}
             />
-            {showSuggestions && (
+            {showSuggestions && suggestions.length > 0 && (
               <SearchResults
                 suggestions={suggestions}
                 aiRecommendations={aiRecommendations}
