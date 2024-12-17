@@ -21,7 +21,7 @@ export const SearchBar = () => {
   const [priceRange, setPriceRange] = useState([0, 30]);
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState(BERLIN_CAFES);
+  const [suggestions, setSuggestions] = useState([]); // Initialize as empty array
 
   // Handle search term changes
   useEffect(() => {
@@ -33,7 +33,7 @@ export const SearchBar = () => {
         selectedFilters,
         priceRange,
         aiRecommendations
-      );
+      ) || []; // Ensure results is always an array
       console.log('Updated suggestions:', results.length);
       setSuggestions(results);
       setShowSuggestions(true);
