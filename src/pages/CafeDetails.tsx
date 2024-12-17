@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { BookingForm } from "@/components/BookingForm";
+import { CheckInQRCode } from "@/components/CheckInQRCode";
 
 const CafeDetails = () => {
   const { id } = useParams();
@@ -83,6 +84,10 @@ const CafeDetails = () => {
 
               <p className="text-gray-700">{cafe.description}</p>
             </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <CheckInQRCode cafeId={cafe.id} price={cafe.price} />
           </div>
         </div>
 

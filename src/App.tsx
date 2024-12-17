@@ -12,6 +12,7 @@ import SavedCafes from "./pages/SavedCafes";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import CafeDetails from "./pages/CafeDetails";
+import CheckInStatus from "./pages/CheckInStatus";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/history" element={<History />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cafe/:id" element={<CafeDetails />} />
+            <Route path="/checkin-status/:id" element={<CheckInStatus />} />
           </Routes>
           <Footer />
         </div>
