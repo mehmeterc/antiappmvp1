@@ -21,22 +21,28 @@ export const SearchBar = () => {
   const [priceRange, setPriceRange] = useState([0, 30]);
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState([]); // Initialize as empty array
+  const [suggestions, setSuggestions] = useState<typeof BERLIN_CAFES>([]);
 
   // Handle search term changes
   useEffect(() => {
     console.log('Search term changed:', searchTerm);
     if (searchTerm.length > 0) {
-      const results = searchCafes(
-        BERLIN_CAFES,
-        searchTerm,
-        selectedFilters,
-        priceRange,
-        aiRecommendations
-      ) || []; // Ensure results is always an array
-      console.log('Updated suggestions:', results.length);
-      setSuggestions(results);
-      setShowSuggestions(true);
+      try {
+        const results = searchCafes(
+          BERLIN_CAFES,
+          searchTerm,
+          selectedFilters,
+          priceRange,
+          aiRecommendations
+        );
+        console.log('Updated suggestions:', results?.length ?? 0);
+        setSuggestions(results ?? []);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -113,7 +119,7 @@ export const SearchBar = () => {
               value={searchTerm}
               onValueChange={setSearchTerm}
             />
-            {showSuggestions && suggestions.length > 0 && searchTerm.length > 0 && (
+            {showSuggestions && suggestions && suggestions.length > 0 && searchTerm.length > 0 && (
               <SearchResults
                 suggestions={suggestions}
                 aiRecommendations={aiRecommendations}
