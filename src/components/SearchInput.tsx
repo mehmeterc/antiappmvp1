@@ -16,8 +16,8 @@ export const SearchInput = ({
   searchTerm,
   onSearchTermChange,
   showSuggestions,
-  suggestions,
-  aiRecommendations,
+  suggestions = [],
+  aiRecommendations = [],
   onCafeSelect,
   isLoading,
 }: SearchInputProps) => {

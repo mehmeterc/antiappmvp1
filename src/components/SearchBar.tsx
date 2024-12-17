@@ -7,6 +7,7 @@ import { SearchControls } from "./SearchControls";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { searchCafes } from "@/utils/searchUtils";
+import { Cafe } from "@/types/cafe";
 
 export const SearchBar = () => {
   const navigate = useNavigate();
@@ -15,9 +16,9 @@ export const SearchBar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 30]);
-  const [suggestions, setSuggestions] = useState<typeof BERLIN_CAFES>([]);
+  const [suggestions, setSuggestions] = useState<Cafe[]>([]);
   
-  const { aiRecommendations, isLoading } = useAIRecommendations(searchTerm);
+  const { aiRecommendations = [], isLoading } = useAIRecommendations(searchTerm);
 
   // Handle search term changes
   useEffect(() => {
