@@ -34,7 +34,9 @@ export const SearchInput = ({
         onValueChange={onSearchTermChange}
       />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        {searchTerm.length > 0 && suggestions.length === 0 && (
+          <CommandEmpty>No results found.</CommandEmpty>
+        )}
         {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && searchTerm.length > 0 && (
           <SearchResults
             suggestions={suggestions}
