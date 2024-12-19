@@ -62,13 +62,8 @@ const CafeDetails = () => {
     }
   };
 
-  // Convert price string to actual hourly rate
   const getPricePerHour = (priceLevel: string) => {
     const level = priceLevel.replace(/[^€]/g, '').length;
-    // Adjust pricing based on level:
-    // € = basic desk (3-5€)
-    // €€ = premium desk with amenities (6-10€)
-    // €€€ = private space/room (15-30€)
     switch (level) {
       case 1: return 5; // Basic desk
       case 2: return 10; // Premium desk
@@ -90,18 +85,18 @@ const CafeDetails = () => {
                 alt={cafe.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 flex items-center gap-1">
-                <span className="text-yellow-400">★</span>
-                <span className="font-medium">{cafe.rating}</span>
-              </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-4 right-20 bg-white/80 hover:bg-white"
+                className="absolute top-4 left-4 bg-white/80 hover:bg-white"
                 onClick={handleSave}
               >
                 <Bookmark className="h-5 w-5" fill={isSaved ? "currentColor" : "none"} />
               </Button>
+              <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 flex items-center gap-1">
+                <span className="text-yellow-400">★</span>
+                <span className="font-medium">{cafe.rating}</span>
+              </div>
             </div>
 
             <div className="p-6 space-y-6">

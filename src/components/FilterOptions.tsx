@@ -1,5 +1,5 @@
 import { EuroIcon, Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed, 
-  Mic, Dumbbell, Zap, Brain, Signal, Timer, Group, Laptop } from "lucide-react";
+  Mic, Dumbbell, Zap, Brain, Signal, Timer, Group, Laptop, Clock } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { Slider } from "./ui/slider";
 
@@ -28,6 +28,7 @@ const FILTER_OPTIONS: FilterOption[] = [
   { id: "group-friendly", label: "Group Friendly", icon: <Group className="w-4 h-4" />, category: 'atmosphere' },
   
   // Services
+  { id: "available-now", label: "Available Now", icon: <Clock className="w-4 h-4" />, category: 'services' },
   { id: "fast-internet", label: "Gigabit Internet", icon: <Zap className="w-4 h-4" />, category: 'services' },
   { id: "real-time", label: "Real-time Availability", icon: <Signal className="w-4 h-4" />, category: 'services' },
   { id: "instant-booking", label: "Instant Booking", icon: <Timer className="w-4 h-4" />, category: 'services' },
