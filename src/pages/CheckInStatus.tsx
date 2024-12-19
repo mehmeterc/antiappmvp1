@@ -13,7 +13,8 @@ const CheckInStatus = () => {
   const [totalCost, setTotalCost] = useState(0);
 
   const cafe = BERLIN_CAFES.find(c => c.id === id);
-  const pricePerHour = cafe ? parseFloat(cafe?.price.replace('€', '')) : 0;
+  // Convert price string (e.g., "€€" or "€€€") to a number
+  const pricePerHour = cafe ? (cafe.price.match(/€/g) || []).length * 10 : 0;
 
   useEffect(() => {
     // Check if there's an existing check-in status in localStorage
@@ -35,7 +36,8 @@ const CheckInStatus = () => {
         
         // Calculate cost (price per hour * hours elapsed)
         const hoursElapsed = elapsed / 3600;
-        setTotalCost(pricePerHour * hoursElapsed);
+        const cost = pricePerHour * hoursElapsed;
+        setTotalCost(Math.max(0, Math.round(cost * 100) / 100)); // Round to 2 decimals and ensure non-negative
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -47,8 +49,35 @@ const CheckInStatus = () => {
       setCheckInTime(now);
       setIsCheckedIn(true);
       localStorage.setItem(`checkin-${id}`, JSON.stringify({ timestamp: now.toISOString() }));
+      
+      // Save to history when checking in
+      const historyItem = {
+        id: Date.now(),
+        cafeId: id,
+        cafeName: cafe?.title || 'Unknown Cafe',
+        checkInTime: now.toISOString(),
+        status: 'Active'
+      };
+      const history = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+      localStorage.setItem('bookingHistory', JSON.stringify([...history, historyItem]));
+      
       toast.success("Successfully checked in!");
     } else {
+      // Update history when checking out
+      const history = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+      const updatedHistory = history.map((item: any) => {
+        if (item.cafeId === id && item.status === 'Active') {
+          return {
+            ...item,
+            checkOutTime: new Date().toISOString(),
+            status: 'Completed',
+            totalCost
+          };
+        }
+        return item;
+      });
+      localStorage.setItem('bookingHistory', JSON.stringify(updatedHistory));
+
       setIsCheckedIn(false);
       setCheckInTime(null);
       localStorage.removeItem(`checkin-${id}`);
