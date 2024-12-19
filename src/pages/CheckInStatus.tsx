@@ -13,14 +13,26 @@ const CheckInStatus = () => {
   const [totalCost, setTotalCost] = useState(0);
 
   const cafe = BERLIN_CAFES.find(c => c.id === id);
-  // Convert price string (e.g., "€€" or "€€€") to a number
-  const pricePerHour = cafe ? (cafe.price.match(/€/g) || []).length * 10 : 0;
+  
+  // Convert price string to actual hourly rate
+  const getHourlyRate = (priceStr: string) => {
+    const priceLevel = (priceStr.match(/€/g) || []).length;
+    switch (priceLevel) {
+      case 1: return 5;  // Basic desk
+      case 2: return 10; // Premium desk
+      case 3: return 30; // Private space
+      default: return 5;
+    }
+  };
+
+  const pricePerHour = cafe ? getHourlyRate(cafe.price) : 5;
 
   useEffect(() => {
-    // Check if there's an existing check-in status in localStorage
+    console.log("Checking stored check-in status for cafe:", id);
     const storedCheckIn = localStorage.getItem(`checkin-${id}`);
     if (storedCheckIn) {
       const { timestamp } = JSON.parse(storedCheckIn);
+      console.log("Found stored check-in timestamp:", timestamp);
       setCheckInTime(new Date(timestamp));
       setIsCheckedIn(true);
     }
@@ -37,7 +49,7 @@ const CheckInStatus = () => {
         // Calculate cost (price per hour * hours elapsed)
         const hoursElapsed = elapsed / 3600;
         const cost = pricePerHour * hoursElapsed;
-        setTotalCost(Math.max(0, Math.round(cost * 100) / 100)); // Round to 2 decimals and ensure non-negative
+        setTotalCost(Math.max(0, Math.round(cost * 100) / 100));
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -58,30 +70,35 @@ const CheckInStatus = () => {
         checkInTime: now.toISOString(),
         status: 'Active'
       };
+      
       const history = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
       localStorage.setItem('bookingHistory', JSON.stringify([...history, historyItem]));
+      console.log("Added new check-in to history:", historyItem);
       
       toast.success("Successfully checked in!");
     } else {
+      const now = new Date();
       // Update history when checking out
       const history = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
       const updatedHistory = history.map((item: any) => {
         if (item.cafeId === id && item.status === 'Active') {
           return {
             ...item,
-            checkOutTime: new Date().toISOString(),
+            checkOutTime: now.toISOString(),
             status: 'Completed',
-            totalCost
+            totalCost: Number(totalCost.toFixed(2))
           };
         }
         return item;
       });
+      
       localStorage.setItem('bookingHistory', JSON.stringify(updatedHistory));
+      console.log("Updated history with check-out:", updatedHistory);
 
       setIsCheckedIn(false);
       setCheckInTime(null);
       localStorage.removeItem(`checkin-${id}`);
-      toast.success(`Checked out! Total cost: €${totalCost.toFixed(2)}`);
+      toast.success(`Checked out! Total cost: ${totalCost.toFixed(2)}€`);
     }
   };
 
@@ -112,7 +129,10 @@ const CheckInStatus = () => {
                 Time elapsed: {Math.floor(elapsedTime / 3600)}h {Math.floor((elapsedTime % 3600) / 60)}m {elapsedTime % 60}s
               </p>
               <p className="text-lg font-semibold">
-                Current cost: €{totalCost.toFixed(2)}
+                Current cost: {totalCost.toFixed(2)}€
+              </p>
+              <p className="text-sm text-gray-500">
+                ({pricePerHour}€ per hour)
               </p>
             </div>
           )}
