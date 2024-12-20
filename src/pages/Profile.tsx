@@ -52,25 +52,31 @@ const Profile = () => {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <div className="flex gap-2">
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-500">
+                <User className="h-4 w-4" />
+              </span>
               <Input
                 id="name"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
-                icon={<User className="h-4 w-4" />}
+                className="pl-10"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <div className="flex gap-2">
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-500">
+                <Mail className="h-4 w-4" />
+              </span>
               <Input
                 id="email"
                 type="email"
                 value={user.email}
                 onChange={(e) => setUser({ ...user, email: e.target.value })}
-                icon={<Mail className="h-4 w-4" />}
+                className="pl-10"
               />
             </div>
           </div>
