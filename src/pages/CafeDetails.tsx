@@ -1,8 +1,8 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro, Bookmark } from "lucide-react";
+import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro, Bookmark, QrCode } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const CafeDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const cafe = BERLIN_CAFES.find(c => c.id === id);
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
@@ -38,6 +39,12 @@ const CafeDetails = () => {
         title: "Cafe removed",
         description: "Removed from your saved spaces.",
       });
+    }
+  };
+
+  const handleDirectCheckIn = () => {
+    if (id) {
+      navigate(`/checkin-status/${id}`);
     }
   };
 
@@ -137,7 +144,29 @@ const CafeDetails = () => {
           </div>
           
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <CheckInQRCode cafeId={cafe.id} price={pricePerHour.toString()} />
+            <div className="flex flex-col space-y-4">
+              <h3 className="text-xl font-semibold mb-4">Check In Options</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <QrCode className="w-4 h-4" />
+                    Scan QR Code
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-4">Scan the QR code with your phone to check in</p>
+                  <CheckInQRCode cafeId={cafe.id} price={pricePerHour.toString()} />
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium mb-2">Direct Check In</h4>
+                  <p className="text-sm text-gray-600 mb-4">Check in directly from this device</p>
+                  <Button 
+                    onClick={handleDirectCheckIn}
+                    className="w-full"
+                  >
+                    Check In Now
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
