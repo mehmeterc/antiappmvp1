@@ -1,18 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Map, BookMarked, History, User } from "lucide-react";
+import { Home, BookMarked, History, MessageSquare } from "lucide-react";
 
 export const Footer = () => {
   const navigate = useNavigate();
 
   const footerItems = [
-    { icon: <Map className="h-6 w-6" />, label: "Map", path: "/search" },
+    { icon: <Home className="h-6 w-6" />, label: "Home", path: "/" },
     { icon: <BookMarked className="h-6 w-6" />, label: "Saved", path: "/saved" },
     { icon: <History className="h-6 w-6" />, label: "History", path: "/history" },
-    { icon: <User className="h-6 w-6" />, label: "Account", path: "/profile" },
+    { icon: <MessageSquare className="h-6 w-6" />, label: "Messages", path: "/messages" },
   ];
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-md py-2 z-50">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-md py-2 z-40">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-4 gap-4">
           {footerItems.map((item) => (
@@ -28,5 +28,21 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
+  );
+};
+
+export const FloatingMapButton = ({ location }: { location: string }) => {
+  const handleMapClick = () => {
+    const encodedLocation = encodeURIComponent(location);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
+  };
+
+  return (
+    <button
+      onClick={handleMapClick}
+      className="fixed bottom-24 right-4 bg-green-500 hover:bg-green-600 text-white rounded-full p-3 shadow-lg z-50 transition-transform hover:scale-105"
+    >
+      <MapPin className="h-6 w-6" />
+    </button>
   );
 };
