@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 
 interface HistoryItem {
   id: number;
+  deviceId?: string;
   cafeId: string;
   cafeName: string;
   checkInTime: string;
@@ -19,15 +20,26 @@ const History = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    // Add console log to debug localStorage content
     console.log("Current booking history in localStorage:", localStorage.getItem('bookingHistory'));
     
     try {
+      // Get current device ID
+      const deviceId = localStorage.getItem('deviceId');
+      console.log("Current device ID:", deviceId);
+      
       const storedHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
-      console.log("Parsed history:", storedHistory);
+      console.log("All stored history:", storedHistory);
+      
+      // Filter history to show items from all devices
+      const relevantHistory = storedHistory.filter((item: HistoryItem) => 
+        !item.deviceId || // Include items without deviceId (backward compatibility)
+        item.deviceId === deviceId // Include items from current device
+      );
+      
+      console.log("Filtered history for current device:", relevantHistory);
       
       // Sort by check-in time, most recent first
-      const sortedHistory = storedHistory.sort((a: HistoryItem, b: HistoryItem) => 
+      const sortedHistory = relevantHistory.sort((a: HistoryItem, b: HistoryItem) => 
         new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
       );
       

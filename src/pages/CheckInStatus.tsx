@@ -14,7 +14,6 @@ const CheckInStatus = () => {
 
   const cafe = BERLIN_CAFES.find(c => c.id === id);
   
-  // Convert price string to actual hourly rate
   const getHourlyRate = (priceStr: string) => {
     const priceLevel = (priceStr.match(/€/g) || []).length;
     switch (priceLevel) {
@@ -27,14 +26,30 @@ const CheckInStatus = () => {
 
   const pricePerHour = cafe ? getHourlyRate(cafe.price) : 5;
 
+  // Function to generate a unique device ID
+  const getDeviceId = () => {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+      deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('deviceId', deviceId);
+    }
+    return deviceId;
+  };
+
   useEffect(() => {
     console.log("Checking stored check-in status for cafe:", id);
-    const storedCheckIn = localStorage.getItem(`checkin-${id}`);
-    if (storedCheckIn) {
-      const { timestamp } = JSON.parse(storedCheckIn);
-      console.log("Found stored check-in timestamp:", timestamp);
-      setCheckInTime(new Date(timestamp));
-      setIsCheckedIn(true);
+    // Check all possible device IDs in localStorage
+    const allKeys = Object.keys(localStorage);
+    const checkInKey = allKeys.find(key => key.startsWith(`checkin-${id}`));
+    
+    if (checkInKey) {
+      const storedCheckIn = localStorage.getItem(checkInKey);
+      if (storedCheckIn) {
+        const { timestamp } = JSON.parse(storedCheckIn);
+        console.log("Found stored check-in timestamp:", timestamp);
+        setCheckInTime(new Date(timestamp));
+        setIsCheckedIn(true);
+      }
     }
   }, [id]);
 
@@ -46,7 +61,6 @@ const CheckInStatus = () => {
         const elapsed = Math.floor((now.getTime() - checkInTime.getTime()) / 1000);
         setElapsedTime(elapsed);
         
-        // Calculate cost (price per hour * hours elapsed)
         const hoursElapsed = elapsed / 3600;
         const cost = pricePerHour * hoursElapsed;
         setTotalCost(Math.max(0, Math.round(cost * 100) / 100));
@@ -56,15 +70,21 @@ const CheckInStatus = () => {
   }, [isCheckedIn, checkInTime, pricePerHour]);
 
   const handleCheckInOut = () => {
+    const deviceId = getDeviceId();
+    const now = new Date();
+
     if (!isCheckedIn) {
-      const now = new Date();
       setCheckInTime(now);
       setIsCheckedIn(true);
-      localStorage.setItem(`checkin-${id}`, JSON.stringify({ timestamp: now.toISOString() }));
       
-      // Save to history when checking in
+      // Store with device ID
+      const checkInData = { timestamp: now.toISOString(), deviceId };
+      localStorage.setItem(`checkin-${id}-${deviceId}`, JSON.stringify(checkInData));
+      
+      // Save to history with device ID
       const historyItem = {
         id: Date.now(),
+        deviceId,
         cafeId: id,
         cafeName: cafe?.title || 'Unknown Cafe',
         checkInTime: now.toISOString(),
@@ -77,13 +97,13 @@ const CheckInStatus = () => {
       
       toast.success("Successfully checked in!");
     } else {
-      const now = new Date();
       // Update history when checking out
       const history = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
       const updatedHistory = history.map((item: any) => {
-        if (item.cafeId === id && item.status === 'Active') {
+        if (item.cafeId === id && item.status === 'Active' && (!item.deviceId || item.deviceId === deviceId)) {
           return {
             ...item,
+            deviceId,
             checkOutTime: now.toISOString(),
             status: 'Completed',
             totalCost: Number(totalCost.toFixed(2))
@@ -95,9 +115,10 @@ const CheckInStatus = () => {
       localStorage.setItem('bookingHistory', JSON.stringify(updatedHistory));
       console.log("Updated history with check-out:", updatedHistory);
 
+      // Remove check-in status
+      localStorage.removeItem(`checkin-${id}-${deviceId}`);
       setIsCheckedIn(false);
       setCheckInTime(null);
-      localStorage.removeItem(`checkin-${id}`);
       toast.success(`Checked out! Total cost: ${totalCost.toFixed(2)}€`);
     }
   };
