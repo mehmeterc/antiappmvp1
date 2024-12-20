@@ -11,8 +11,8 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual authentication
     console.log("Login attempt:", { email });
+    localStorage.setItem('isLoggedIn', 'true');
     toast.success("Login successful!");
     navigate("/profile");
   };

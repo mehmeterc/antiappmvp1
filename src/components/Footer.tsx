@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Home, BookMarked, History, MessageSquare } from "lucide-react";
+import { Home, BookMarked, History, MessageSquare, MapPin } from "lucide-react";
 
 export const Footer = () => {
   const navigate = useNavigate();
