@@ -1,59 +1,96 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { User, Clock, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { CreditCard, Mail, User, Camera } from "lucide-react";
+import { toast } from "sonner";
 
 const Profile = () => {
-  const navigate = useNavigate();
+  const [user, setUser] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
+    paymentMethod: "**** **** **** 4242"
+  });
+
+  const handleSave = () => {
+    console.log("Saving user profile:", user);
+    toast.success("Profile updated successfully!");
+  };
+
+  const handleImageUpload = () => {
+    console.log("Uploading new profile picture");
+    toast.success("Profile picture updated!");
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="bg-primary/10 p-4 rounded-full">
-            <User className="h-12 w-12 text-primary" />
+      <Card className="p-6 space-y-8">
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src={user.avatar} />
+              <AvatarFallback>{user.name[0]}</AvatarFallback>
+            </Avatar>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="absolute bottom-0 right-0"
+              onClick={handleImageUpload}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
           </div>
           <div>
-            <h1 className="text-2xl font-bold">John Doe</h1>
-            <p className="text-gray-600">john.doe@example.com</p>
+            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <p className="text-gray-500">{user.email}</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Recent Activity</h2>
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="h-4 w-4 mr-2" />
-                Last visit: St. Oberholz (2 days ago)
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2" />
-                Favorite area: Mitte
-              </div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <div className="flex gap-2">
+              <Input
+                id="name"
+                value={user.name}
+                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                icon={<User className="h-4 w-4" />}
+              />
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Quick Actions</h2>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => navigate("/saved")}
-              >
-                View Saved Cafes
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => navigate("/search")}
-              >
-                Find New Spaces
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="flex gap-2">
+              <Input
+                id="email"
+                type="email"
+                value={user.email}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                icon={<Mail className="h-4 w-4" />}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Payment Method</Label>
+            <div className="flex items-center gap-2 p-3 border rounded-md">
+              <CreditCard className="h-4 w-4" />
+              <span>{user.paymentMethod}</span>
+              <Button variant="outline" className="ml-auto">
+                Update
               </Button>
             </div>
           </div>
         </div>
-      </div>
+
+        <Button onClick={handleSave} className="w-full">
+          Save Changes
+        </Button>
+      </Card>
     </div>
   );
 };
