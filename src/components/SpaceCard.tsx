@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Bookmark } from "lucide-react";
-import { useToast } from "./ui/use-toast";
-import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
 interface SpaceCardProps {
   id: string;
@@ -14,9 +15,10 @@ interface SpaceCardProps {
   image: string;
   address: string;
   amenities: string[];
+  isDetailed?: boolean;
 }
 
-export const SpaceCard = ({ id, title, description, rating, image, address, amenities }: SpaceCardProps) => {
+export const SpaceCard = ({ id, title, description, rating, image, address, amenities, isDetailed }: SpaceCardProps) => {
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
 
@@ -28,6 +30,8 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
 
   const handleSave = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     setIsSaved(!isSaved);
     
     const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
@@ -48,42 +52,43 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
 
   return (
     <Link to={`/cafe/${id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <CardHeader className="p-0">
-          <div className="relative h-48">
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`absolute top-4 right-4 bg-white/90 hover:bg-white shadow-md ${
-                isSaved ? 'text-[#0D9F6C]' : 'text-gray-500'
-              }`}
-              onClick={handleSave}
-            >
-              <Bookmark className="h-5 w-5" fill={isSaved ? "currentColor" : "none"} />
-            </Button>
+      <Card className="overflow-hidden h-full group relative">
+        <div className="relative">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-48 object-cover"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "absolute top-4 right-4 bg-white/90 hover:bg-white shadow-md transition-colors",
+              isSaved ? "text-[#0D9F6C] hover:text-[#0D9F6C]" : "text-gray-500 hover:text-gray-700"
+            )}
+            onClick={handleSave}
+          >
+            <Bookmark className={cn("h-5 w-5", isSaved ? "fill-current" : "fill-none")} />
+          </Button>
+          <div className="absolute top-4 left-4 bg-white/90 rounded-full px-2 py-1 text-sm font-medium">
+            ⭐️ {rating}
           </div>
+        </div>
+        <CardHeader>
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <p className="text-sm text-gray-500">{address}</p>
         </CardHeader>
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <Badge variant="secondary">★ {rating}</Badge>
-          </div>
-          <p className="text-sm text-gray-600 mb-2">{address}</p>
-          <p className="text-sm text-gray-500 line-clamp-2">{description}</p>
-        </CardContent>
-        <CardFooter className="p-4 pt-0">
-          <div className="flex flex-wrap gap-2">
-            {amenities.slice(0, 3).map((amenity) => (
-              <Badge key={amenity} variant="outline">
-                {amenity}
-              </Badge>
-            ))}
-          </div>
+        {isDetailed && (
+          <CardContent>
+            <p className="text-sm text-gray-600">{description}</p>
+          </CardContent>
+        )}
+        <CardFooter className="flex gap-2 flex-wrap">
+          {amenities.slice(0, 3).map((amenity) => (
+            <Badge key={amenity} variant="secondary">
+              {amenity}
+            </Badge>
+          ))}
         </CardFooter>
       </Card>
     </Link>
