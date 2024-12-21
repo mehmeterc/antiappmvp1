@@ -20,7 +20,6 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
 
-  // Check if the cafe is saved when component mounts
   useEffect(() => {
     const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
     const isAlreadySaved = savedCafes.some((cafe: { id: string }) => cafe.id === id);
@@ -28,10 +27,9 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
   }, [id]);
 
   const handleSave = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation when clicking the bookmark
+    e.preventDefault();
     setIsSaved(!isSaved);
     
-    // In a real app, this would interact with a backend
     const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
     if (!isSaved) {
       localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, image, address, amenities }]));
@@ -61,8 +59,8 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
             <Button
               variant="ghost"
               size="icon"
-              className={`absolute top-2 right-2 bg-white/80 hover:bg-white ${
-                isSaved ? 'text-primary' : 'text-gray-500'
+              className={`absolute top-4 right-4 bg-white/90 hover:bg-white shadow-md ${
+                isSaved ? 'text-[#0D9F6C]' : 'text-gray-500'
               }`}
               onClick={handleSave}
             >
