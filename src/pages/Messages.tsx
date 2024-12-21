@@ -13,6 +13,17 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const currentUserId = "1";
 
+  const handleUserClick = (user: User) => {
+    // If clicking the same user, close the conversation
+    if (selectedUser?.id === user.id) {
+      setSelectedUser(null);
+      console.log("Closing conversation with:", user.name);
+    } else {
+      setSelectedUser(user);
+      console.log("Opening conversation with:", user.name);
+    }
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser || !newMessage.trim()) return;
@@ -43,8 +54,8 @@ const Messages = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-4 h-[calc(100vh-200px)]">
-        {/* Users list - Always visible */}
-        <div className="col-span-12 md:col-span-4 border rounded-lg overflow-hidden">
+        {/* Users list - Always visible on mobile */}
+        <div className={`col-span-12 ${selectedUser ? 'hidden md:block' : ''} md:col-span-4 border rounded-lg overflow-hidden`}>
           <div className="p-3 border-b bg-gray-50">
             <h2 className="font-semibold text-sm">Messages</h2>
           </div>
@@ -55,7 +66,7 @@ const Messages = () => {
                 className={`p-2 flex items-center gap-2 hover:bg-gray-50 cursor-pointer border-b ${
                   selectedUser?.id === user.id ? "bg-gray-100" : ""
                 }`}
-                onClick={() => setSelectedUser(user)}
+                onClick={() => handleUserClick(user)}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} />
@@ -71,10 +82,10 @@ const Messages = () => {
         </div>
 
         {/* Chat area */}
-        <div className="col-span-12 md:col-span-8 border rounded-lg flex flex-col">
+        <div className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col`}>
           {selectedUser ? (
             <>
-              <div className="p-3 border-b bg-gray-50">
+              <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={selectedUser.avatar} />
@@ -82,6 +93,14 @@ const Messages = () => {
                   </Avatar>
                   <p className="font-medium text-sm">{selectedUser.name}</p>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="md:hidden"
+                  onClick={() => setSelectedUser(null)}
+                >
+                  Back
+                </Button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
