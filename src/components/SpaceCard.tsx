@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Bookmark } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { AddressLink } from "./AddressLink";
 
 interface SpaceCardProps {
   id: string;
@@ -76,7 +77,7 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
         </div>
         <CardHeader>
           <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm text-gray-500">{address}</p>
+          <AddressLink address={address} className="text-sm text-gray-500" />
         </CardHeader>
         {isDetailed && (
           <CardContent>

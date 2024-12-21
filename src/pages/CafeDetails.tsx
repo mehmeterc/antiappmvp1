@@ -8,6 +8,7 @@ import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { AddressLink } from "@/components/AddressLink";
 
 const CafeDetails = () => {
   const { id } = useParams();
@@ -95,12 +96,12 @@ const CafeDetails = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-4 left-4 bg-white/80 hover:bg-white"
+                className="absolute top-4 right-4 bg-white/80 hover:bg-white"
                 onClick={handleSave}
               >
                 <Bookmark className="h-5 w-5" fill={isSaved ? "currentColor" : "none"} />
               </Button>
-              <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 flex items-center gap-1">
+              <div className="absolute top-4 left-4 bg-white rounded-full px-3 py-1 flex items-center gap-1">
                 <span className="text-yellow-400">★</span>
                 <span className="font-medium">{cafe.rating}</span>
               </div>
@@ -109,10 +110,7 @@ const CafeDetails = () => {
             <div className="p-6 space-y-6">
               <div>
                 <h1 className="text-3xl font-bold mb-2">{cafe.title}</h1>
-                <p className="text-gray-600 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {cafe.address}
-                </p>
+                <AddressLink address={cafe.address} className="text-gray-600" />
               </div>
 
               <div className="flex flex-wrap gap-2">
