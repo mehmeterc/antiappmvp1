@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
-import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info } from "lucide-react";
+import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -19,6 +19,7 @@ export const Navigation = () => {
     { label: "Saved Cafes", icon: <BookMarked className="h-4 w-4" />, path: "/saved" },
     { label: "History", icon: <History className="h-4 w-4" />, path: "/history" },
     { label: "Messages", icon: <MessageSquare className="h-4 w-4" />, path: "/messages" },
+    { label: "Reviews", icon: <Star className="h-4 w-4" />, path: "/reviews" },
     { label: "About", icon: <Info className="h-4 w-4" />, path: "/about" },
   ];
 

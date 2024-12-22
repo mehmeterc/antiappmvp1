@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import SavedCafes from "./pages/SavedCafes";
 import History from "./pages/History";
 import Messages from "./pages/Messages";
+import Reviews from "./pages/Reviews";
 import Login from "./pages/Login";
 import CafeDetails from "./pages/CafeDetails";
 import CheckInStatus from "./pages/CheckInStatus";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/saved" element={<SavedCafes />} />
             <Route path="/history" element={<History />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/reviews" element={<Reviews />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cafe/:id" element={<CafeDetails />} />
             <Route path="/checkin-status/:id" element={<CheckInStatus />} />
