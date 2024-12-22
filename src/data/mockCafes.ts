@@ -64,7 +64,8 @@ export const BERLIN_CAFES = [
     tags: ["startup", "networking", "modern"],
     coordinates: { lat: 52.507351, lng: 13.391766 },
     peakHours: "09:00-17:00",
-    noiseLevel: "low"
+    noiseLevel: "low",
+    reviews: []
   },
   {
     id: "4",
@@ -80,7 +81,8 @@ export const BERLIN_CAFES = [
     tags: ["eco-friendly", "organic", "peaceful"],
     coordinates: { lat: 52.531673, lng: 13.384393 },
     peakHours: "11:00-15:00",
-    noiseLevel: "low"
+    noiseLevel: "low",
+    reviews: []
   },
   {
     id: "5",
@@ -131,7 +133,8 @@ export const BERLIN_CAFES = [
     tags: ["wellness", "productivity", "modern"],
     coordinates: { lat: 52.505, lng: 13.449 },
     peakHours: "08:00-16:00",
-    noiseLevel: "very low"
+    noiseLevel: "very low",
+    reviews: []
   },
   {
     id: "7",
@@ -147,7 +150,8 @@ export const BERLIN_CAFES = [
     tags: ["family", "friendly", "comfortable"],
     coordinates: { lat: 52.54, lng: 13.42 },
     peakHours: "09:00-13:00",
-    noiseLevel: "moderate"
+    noiseLevel: "moderate",
+    reviews: []
   },
   {
     id: "8",
@@ -163,7 +167,8 @@ export const BERLIN_CAFES = [
     tags: ["tech", "modern", "professional"],
     coordinates: { lat: 52.522, lng: 13.413 },
     peakHours: "10:00-18:00",
-    noiseLevel: "low"
+    noiseLevel: "low",
+    reviews: []
   },
   {
     id: "9",
@@ -179,7 +184,8 @@ export const BERLIN_CAFES = [
     tags: ["24/7", "quiet", "flexible"],
     coordinates: { lat: 52.515, lng: 13.469 },
     peakHours: "00:00-06:00",
-    noiseLevel: "very low"
+    noiseLevel: "very low",
+    reviews: []
   },
   {
     id: "10",
@@ -195,5 +201,7 @@ export const BERLIN_CAFES = [
     tags: ["startup", "networking", "modern"],
     coordinates: { lat: 52.54, lng: 13.402 },
     peakHours: "13:00-17:00",
-    noiseLevel: "moderate"
+    noiseLevel: "moderate",
+    reviews: []
   }
+];
