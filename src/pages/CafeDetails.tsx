@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro, Bookmark, QrCode } from "lucide-react";
+import { Bookmark, Wifi, Coffee, Plug, Baby, Volume2, MapPin, Clock, Euro, QrCode } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
@@ -10,6 +10,23 @@ import { Reviews } from "@/components/Reviews";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddressLink } from "@/components/AddressLink";
+
+const getAmenityIcon = (amenity: string) => {
+  switch (amenity.toLowerCase()) {
+    case 'wifi':
+      return <Wifi className="h-4 w-4" />;
+    case 'coffee':
+      return <Coffee className="h-4 w-4" />;
+    case 'power':
+      return <Plug className="h-4 w-4" />;
+    case 'baby':
+      return <Baby className="h-4 w-4" />;
+    case 'quiet':
+      return <Volume2 className="h-4 w-4" />;
+    default:
+      return null;
+  }
+};
 
 const CafeDetails = () => {
   const { id } = useParams();

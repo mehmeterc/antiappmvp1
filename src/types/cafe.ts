@@ -16,11 +16,14 @@ export interface Cafe {
   address: string;
   occupancy: string;
   price: string;
+  priceRange: string;
   amenities: string[];
   tags: string[];
-  reviews: Review[];
   coordinates: {
     lat: number;
     lng: number;
   };
+  reviews?: Review[]; // Made optional with ?
+  peakHours?: string;
+  noiseLevel?: string;
 }

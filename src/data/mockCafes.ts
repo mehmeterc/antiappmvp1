@@ -45,7 +45,8 @@ export const BERLIN_CAFES = [
     tags: ["community", "events", "food"],
     coordinates: { lat: 52.529971, lng: 13.401618 },
     peakHours: "10:00-14:00",
-    noiseLevel: "moderate"
+    noiseLevel: "moderate",
+    reviews: [] // Added empty reviews array
   },
   {
     id: "3",
