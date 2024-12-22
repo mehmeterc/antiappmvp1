@@ -2,8 +2,9 @@ import Fuse from 'fuse.js';
 import { Cafe } from '@/types/cafe';
 
 const fuseOptions = {
-  keys: ['title', 'description', 'address', 'tags'],
-  threshold: 0.4, // More lenient matching
+  keys: ['title', 'description', 'address', 'tags', 'amenities'],
+  threshold: 0.3, // More strict matching
+  distance: 100, // Allow for more distance between matches
   includeScore: true,
   useExtendedSearch: true,
   ignoreLocation: true,
@@ -14,8 +15,8 @@ export const normalizeText = (text: string): string => {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    .replace(/[^a-z0-9\s]/g, ''); // Remove special characters
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '');
 };
 
 export const searchCafes = (
@@ -25,38 +26,56 @@ export const searchCafes = (
   priceRange: number[],
   aiRecommendations: string[]
 ): Cafe[] => {
-  console.log('Searching cafes with term:', searchTerm);
+  console.log('Searching cafes with:', {
+    searchTerm,
+    selectedFilters,
+    priceRange,
+    aiRecommendationsCount: aiRecommendations.length
+  });
   
-  const normalizedSearchTerm = normalizeText(searchTerm);
-  
-  // If no search term, return all cafes (filtered by other criteria)
-  if (normalizedSearchTerm.length === 0) {
-    return filterByOtherCriteria(cafes, selectedFilters, priceRange);
+  // First, filter by price range
+  let filteredCafes = cafes.filter(cafe => {
+    const price = parseInt(cafe.price);
+    return price >= priceRange[0] && price <= priceRange[1];
+  });
+
+  // Then apply amenity filters
+  if (selectedFilters.length > 0) {
+    filteredCafes = filteredCafes.filter(cafe =>
+      selectedFilters.every(filter => cafe.amenities.includes(filter))
+    );
   }
 
-  const fuse = new Fuse(cafes, fuseOptions);
+  // If no search term, return filtered results
+  if (!searchTerm.trim()) {
+    console.log('No search term, returning filtered cafes:', filteredCafes.length);
+    return filteredCafes;
+  }
+
+  const normalizedSearchTerm = normalizeText(searchTerm);
   
-  // First try exact matching
-  let results = cafes.filter(cafe => 
+  // Try exact matches first
+  let results = filteredCafes.filter(cafe => 
     normalizeText(cafe.title).includes(normalizedSearchTerm) ||
     normalizeText(cafe.description).includes(normalizedSearchTerm) ||
-    cafe.tags.some(tag => normalizeText(tag).includes(normalizedSearchTerm))
+    cafe.tags.some(tag => normalizeText(tag).includes(normalizedSearchTerm)) ||
+    cafe.amenities.some(amenity => normalizeText(amenity).includes(normalizedSearchTerm))
   );
 
   // If no exact matches, use fuzzy search
   if (results.length === 0) {
-    console.log('No exact matches, trying fuzzy search');
+    console.log('No exact matches, using fuzzy search');
+    const fuse = new Fuse(filteredCafes, fuseOptions);
     const fuseResults = fuse.search(normalizedSearchTerm);
-    results = fuseResults.map(result => result.item);
+    
+    // Only include results with a good match score
+    results = fuseResults
+      .filter(result => result.score && result.score < 0.6)
+      .map(result => result.item);
   }
 
-  console.log('Search results before filtering:', results.length);
-
-  // Apply other filters
-  results = filterByOtherCriteria(results, selectedFilters, priceRange);
-
-  // Include AI recommendations if they exist and aren't already in results
-  const recommendedCafes = cafes.filter(cafe => 
+  // Include AI recommendations if they exist
+  const recommendedCafes = filteredCafes.filter(cafe => 
     aiRecommendations.includes(cafe.id) && 
     !results.find(r => r.id === cafe.id)
   );
@@ -65,20 +84,4 @@ export const searchCafes = (
   console.log('Final search results:', finalResults.length);
 
   return finalResults;
-};
-
-const filterByOtherCriteria = (
-  cafes: Cafe[],
-  selectedFilters: string[],
-  priceRange: number[]
-): Cafe[] => {
-  return cafes.filter(cafe => {
-    const matchesFilters = selectedFilters.length === 0 || 
-      selectedFilters.every(filter => cafe.amenities.includes(filter));
-
-    const priceValue = parseInt(cafe.price.replace(/€/g, '').length.toString());
-    const matchesPrice = priceValue >= priceRange[0] && priceValue <= priceRange[1];
-
-    return matchesFilters && matchesPrice;
-  });
 };

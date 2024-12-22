@@ -1,16 +1,19 @@
 export const BERLIN_CAFES = [
   {
     id: "1",
-    title: "The Digital Nomad Cafe",
+    title: "The Digital Nomad Hub",
     description: "A spacious cafe with fast WiFi and plenty of power outlets, perfect for remote work.",
     rating: 4.8,
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
     address: "Friedrichstraße 123, 10117 Berlin",
     occupancy: "Usually quiet",
-    price: "€€",
-    amenities: ["wifi", "power", "coffee", "quiet"],
+    price: "2",
+    priceRange: "budget",
+    amenities: ["wifi", "power", "coffee", "quiet", "focus", "available-now"],
     tags: ["workspace", "quiet", "coffee"],
-    coordinates: { lat: 52.520008, lng: 13.404954 }
+    coordinates: { lat: 52.520008, lng: 13.404954 },
+    peakHours: "14:00-18:00",
+    noiseLevel: "low"
   },
   {
     id: "2",
@@ -20,23 +23,29 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814",
     address: "Torstraße 45, 10119 Berlin",
     occupancy: "Moderately busy",
-    price: "€€",
-    amenities: ["wifi", "power", "coffee", "community", "podcast-room"],
+    price: "3",
+    priceRange: "moderate",
+    amenities: ["wifi", "power", "coffee", "community", "podcast-room", "group-friendly", "real-time"],
     tags: ["community", "events", "food"],
-    coordinates: { lat: 52.529971, lng: 13.401618 }
+    coordinates: { lat: 52.529971, lng: 13.401618 },
+    peakHours: "10:00-14:00",
+    noiseLevel: "moderate"
   },
   {
     id: "3",
-    title: "Startup Space",
+    title: "Focus Space",
     description: "Modern coworking cafe with meeting rooms and networking opportunities.",
     rating: 4.9,
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c",
     address: "Rudi-Dutschke-Straße 26, 10969 Berlin",
     occupancy: "Busy",
-    price: "€€€",
-    amenities: ["wifi", "power", "coffee", "phonebooth", "community"],
+    price: "4",
+    priceRange: "premium",
+    amenities: ["wifi", "power", "coffee", "phonebooth", "workspace", "instant-booking", "fast-internet"],
     tags: ["startup", "networking", "modern"],
-    coordinates: { lat: 52.507351, lng: 13.391766 }
+    coordinates: { lat: 52.507351, lng: 13.391766 },
+    peakHours: "09:00-17:00",
+    noiseLevel: "low"
   },
   {
     id: "4",
@@ -46,10 +55,13 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1525610553991-2bede1a236e2",
     address: "Invalidenstraße 89, 10115 Berlin",
     occupancy: "Moderately quiet",
-    price: "€€",
-    amenities: ["wifi", "coffee", "quiet", "baby"],
+    price: "2",
+    priceRange: "budget",
+    amenities: ["wifi", "coffee", "quiet", "baby", "available-now", "group-friendly"],
     tags: ["eco-friendly", "organic", "peaceful"],
-    coordinates: { lat: 52.531673, lng: 13.384393 }
+    coordinates: { lat: 52.531673, lng: 13.384393 },
+    peakHours: "11:00-15:00",
+    noiseLevel: "low"
   },
   {
     id: "5",
@@ -59,10 +71,13 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
     address: "Kastanienallee 56, 10119 Berlin",
     occupancy: "Varies",
-    price: "€€",
-    amenities: ["wifi", "power", "coffee", "podcast-room", "community"],
+    price: "3",
+    priceRange: "moderate",
+    amenities: ["wifi", "power", "coffee", "podcast-room", "community", "real-time", "workspace"],
     tags: ["creative", "workshops", "art"],
-    coordinates: { lat: 52.533581, lng: 13.409416 }
+    coordinates: { lat: 52.533581, lng: 13.409416 },
+    peakHours: "13:00-19:00",
+    noiseLevel: "moderate"
   },
   {
     id: "6",
@@ -72,10 +87,13 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1559925393-8be0ec4767c8",
     address: "Warschauer Str. 70, 10243 Berlin",
     occupancy: "Moderate",
-    price: "€€€",
-    amenities: ["wifi", "power", "coffee", "gym", "nap-pods"],
+    price: "5",
+    priceRange: "premium",
+    amenities: ["wifi", "power", "coffee", "gym", "nap-pods", "focus", "fast-internet"],
     tags: ["wellness", "productivity", "modern"],
-    coordinates: { lat: 52.505, lng: 13.449 }
+    coordinates: { lat: 52.505, lng: 13.449 },
+    peakHours: "08:00-16:00",
+    noiseLevel: "very low"
   },
   {
     id: "7",
@@ -85,10 +103,13 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1576014091861-0be66d6c4d64",
     address: "Prenzlauer Allee 242, 10405 Berlin",
     occupancy: "Busy mornings",
-    price: "€€",
-    amenities: ["wifi", "power", "coffee", "baby", "quiet"],
+    price: "4",
+    priceRange: "premium",
+    amenities: ["wifi", "power", "coffee", "baby", "quiet", "instant-booking", "group-friendly"],
     tags: ["family", "friendly", "comfortable"],
-    coordinates: { lat: 52.54, lng: 13.42 }
+    coordinates: { lat: 52.54, lng: 13.42 },
+    peakHours: "09:00-13:00",
+    noiseLevel: "moderate"
   },
   {
     id: "8",
@@ -98,10 +119,13 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1497366858526-0766cadbe8fa",
     address: "Alexanderplatz 7, 10178 Berlin",
     occupancy: "Moderate",
-    price: "€€€",
-    amenities: ["wifi", "power", "coffee", "podcast-room", "phonebooth"],
+    price: "5",
+    priceRange: "premium",
+    amenities: ["wifi", "power", "coffee", "podcast-room", "phonebooth", "fast-internet", "workspace"],
     tags: ["tech", "modern", "professional"],
-    coordinates: { lat: 52.522, lng: 13.413 }
+    coordinates: { lat: 52.522, lng: 13.413 },
+    peakHours: "10:00-18:00",
+    noiseLevel: "low"
   },
   {
     id: "9",
@@ -111,22 +135,28 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
     address: "Frankfurter Allee 111, 10247 Berlin",
     occupancy: "Varies",
-    price: "€€",
-    amenities: ["wifi", "power", "coffee", "nap-pods", "quiet"],
+    price: "3",
+    priceRange: "moderate",
+    amenities: ["wifi", "power", "coffee", "nap-pods", "quiet", "available-now", "real-time"],
     tags: ["24/7", "quiet", "flexible"],
-    coordinates: { lat: 52.515, lng: 13.469 }
+    coordinates: { lat: 52.515, lng: 13.469 },
+    peakHours: "00:00-06:00",
+    noiseLevel: "very low"
   },
   {
     id: "10",
-    title: "Fitness First Workspace",
-    description: "Combine work and workout in this unique space.",
+    title: "Startup Space",
+    description: "Combine work and networking in this vibrant space.",
     rating: 4.9,
     image: "https://images.unsplash.com/photo-1570829460005-c840387bb1ca",
     address: "Bernauer Str. 50-51, 13355 Berlin",
     occupancy: "Busy afternoons",
-    price: "€€€",
-    amenities: ["wifi", "power", "coffee", "gym", "phonebooth"],
-    tags: ["fitness", "work", "lifestyle"],
-    coordinates: { lat: 52.54, lng: 13.402 }
+    price: "4",
+    priceRange: "premium",
+    amenities: ["wifi", "power", "coffee", "phonebooth", "community", "instant-booking", "workspace"],
+    tags: ["startup", "networking", "modern"],
+    coordinates: { lat: 52.54, lng: 13.402 },
+    peakHours: "13:00-17:00",
+    noiseLevel: "moderate"
   }
 ];
