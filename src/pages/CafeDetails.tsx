@@ -142,8 +142,9 @@ const CafeDetails = () => {
           </div>
         </div>
 
-        <div className="md:col-span-1">
-          <BookingForm cafeId={cafe.id} price={pricePerHour.toString()} />
+        <div className="md:col-span-1 space-y-6">
+          <BookingForm cafeId={cafe.id} price={cafe.price} />
+          <CheckInQRCode cafeId={cafe.id} price={cafe.price} />
         </div>
       </div>
     </Layout>
