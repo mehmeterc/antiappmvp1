@@ -6,6 +6,7 @@ import { Wifi, Plug, Coffee, Baby, Volume2, MapPin, Clock, Euro, Bookmark, QrCod
 import { Layout } from "@/components/Layout";
 import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
+import { Reviews } from "@/components/Reviews";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddressLink } from "@/components/AddressLink";
@@ -53,31 +54,9 @@ const CafeDetails = () => {
     return <div className="text-center py-12">Cafe not found</div>;
   }
 
-  const getAmenityIcon = (amenity: string) => {
-    switch (amenity) {
-      case "wifi":
-        return <Wifi className="w-4 h-4" />;
-      case "power":
-        return <Plug className="w-4 h-4" />;
-      case "coffee":
-        return <Coffee className="w-4 h-4" />;
-      case "quiet":
-        return <Volume2 className="w-4 h-4" />;
-      case "baby":
-        return <Baby className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
-
   const getPricePerHour = (priceLevel: string) => {
-    const level = priceLevel.replace(/[^€]/g, '').length;
-    switch (level) {
-      case 1: return 5; // Basic desk
-      case 2: return 10; // Premium desk
-      case 3: return 30; // Private space/room
-      default: return 5;
-    }
+    const level = parseInt(priceLevel);
+    return level * 2; // Now each price level represents 2€ increments
   };
 
   const pricePerHour = getPricePerHour(cafe.price);
@@ -142,29 +121,7 @@ const CafeDetails = () => {
           </div>
           
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex flex-col space-y-4">
-              <h3 className="text-xl font-semibold mb-4">Check In Options</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <QrCode className="w-4 h-4" />
-                    Scan QR Code
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-4">Scan the QR code with your phone to check in</p>
-                  <CheckInQRCode cafeId={cafe.id} price={pricePerHour.toString()} />
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Direct Check In</h4>
-                  <p className="text-sm text-gray-600 mb-4">Check in directly from this device</p>
-                  <Button 
-                    onClick={handleDirectCheckIn}
-                    className="w-full"
-                  >
-                    Check In Now
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <Reviews reviews={cafe.reviews} />
           </div>
         </div>
 

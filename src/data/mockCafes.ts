@@ -7,13 +7,29 @@ export const BERLIN_CAFES = [
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
     address: "Friedrichstraße 123, 10117 Berlin",
     occupancy: "Usually quiet",
-    price: "2",
-    priceRange: "budget",
+    price: "3",
+    priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "quiet", "focus", "available-now"],
     tags: ["workspace", "quiet", "coffee"],
     coordinates: { lat: 52.520008, lng: 13.404954 },
-    peakHours: "14:00-18:00",
-    noiseLevel: "low"
+    reviews: [
+      {
+        id: "r1",
+        userId: "u1",
+        userName: "Sarah K.",
+        rating: 5,
+        comment: "Perfect spot for focused work. Great coffee and stable WiFi!",
+        date: "2024-02-15"
+      },
+      {
+        id: "r2",
+        userId: "u2",
+        userName: "Mike R.",
+        rating: 4,
+        comment: "Quiet atmosphere and comfortable seating. Could use more power outlets.",
+        date: "2024-02-10"
+      }
+    ]
   },
   {
     id: "2",

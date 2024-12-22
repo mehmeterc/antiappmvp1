@@ -1,3 +1,12 @@
+export interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Cafe {
   id: string;
   title: string;
@@ -9,6 +18,7 @@ export interface Cafe {
   price: string;
   amenities: string[];
   tags: string[];
+  reviews: Review[];
   coordinates: {
     lat: number;
     lng: number;
