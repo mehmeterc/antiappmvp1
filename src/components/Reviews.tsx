@@ -9,14 +9,19 @@ interface ReviewsProps {
 export const Reviews = ({ reviews = [] }: ReviewsProps) => {
   console.log("Reviews component - received reviews:", reviews); // Debug log
 
+  // Sort reviews by date, most recent first
+  const sortedReviews = [...reviews].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold">Community Reviews</h3>
       <div className="grid gap-4">
-        {reviews.length === 0 ? (
+        {sortedReviews.length === 0 ? (
           <p className="text-gray-500">No reviews yet. Be the first to review!</p>
         ) : (
-          reviews.map((review) => (
+          sortedReviews.map((review) => (
             <Card key={review.id} className="p-4">
               <div className="flex items-start justify-between">
                 <div>

@@ -6,7 +6,7 @@ import { Bookmark, Wifi, Coffee, Plug, Baby, Volume2, MapPin, Clock, Euro, QrCod
 import { Layout } from "@/components/Layout";
 import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
-import { Reviews } from "@/components/Reviews";
+import { ReviewsManager } from "@/components/ReviewsManager";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddressLink } from "@/components/AddressLink";
@@ -166,7 +166,7 @@ const CafeDetails = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <Reviews reviews={cafe.reviews} />
+            <ReviewsManager cafeId={cafe.id} initialReviews={cafe.reviews} />
           </div>
         </div>
 
