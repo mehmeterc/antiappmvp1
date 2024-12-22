@@ -31,6 +31,7 @@ export const BERLIN_CAFES = [
       }
     ]
   },
+
   {
     id: "2",
     title: "Community Hub",
@@ -46,8 +47,9 @@ export const BERLIN_CAFES = [
     coordinates: { lat: 52.529971, lng: 13.401618 },
     peakHours: "10:00-14:00",
     noiseLevel: "moderate",
-    reviews: [] // Added empty reviews array
+    reviews: []
   },
+
   {
     id: "3",
     title: "Focus Space",
@@ -94,8 +96,27 @@ export const BERLIN_CAFES = [
     tags: ["creative", "workshops", "art"],
     coordinates: { lat: 52.533581, lng: 13.409416 },
     peakHours: "13:00-19:00",
-    noiseLevel: "moderate"
+    noiseLevel: "moderate",
+    reviews: [
+      {
+        id: "r5-1",
+        userId: "u10",
+        userName: "Alex M.",
+        rating: 5,
+        comment: "Perfect spot for creative work. Love the atmosphere!",
+        date: "2024-02-18"
+      },
+      {
+        id: "r5-2",
+        userId: "u11",
+        userName: "Julia R.",
+        rating: 4,
+        comment: "Great community of artists and creators. Coffee could be better.",
+        date: "2024-02-15"
+      }
+    ]
   },
+
   {
     id: "6",
     title: "Wellness Workspace",
@@ -176,4 +197,3 @@ export const BERLIN_CAFES = [
     peakHours: "13:00-17:00",
     noiseLevel: "moderate"
   }
-];
