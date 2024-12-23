@@ -1,6 +1,7 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star } from "lucide-react";
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   Sheet,
   SheetContent,
@@ -9,10 +10,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 export const Navigation = () => {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const session = useSession();
+  const supabase = useSupabaseClient();
 
   const menuItems = [
     { label: "Profile", icon: <User className="h-4 w-4" />, path: "/profile" },
@@ -23,9 +26,15 @@ export const Navigation = () => {
     { label: "About", icon: <Info className="h-4 w-4" />, path: "/about" },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error("Error logging out");
+    }
   };
 
   return (
@@ -46,7 +55,7 @@ export const Navigation = () => {
             Find Spaces
           </Button>
 
-          {isLoggedIn ? (
+          {session ? (
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
