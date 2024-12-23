@@ -13,6 +13,7 @@ const Login = () => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session);
       if (session) {
         navigate('/');
       }
@@ -23,8 +24,18 @@ const Login = () => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
-      if (session) {
+      
+      if (event === 'SIGNED_IN' && session) {
         toast.success('Successfully logged in!');
+        navigate('/');
+      } else if (event === 'SIGNED_OUT') {
+        toast.success('Successfully logged out!');
+      } else if (event === 'USER_UPDATED') {
+        console.log('User updated:', session?.user);
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast.info('Please check your email for password reset instructions');
+      } else if (event === 'USER_DELETED') {
+        toast.success('Account successfully deleted');
         navigate('/');
       }
     });
@@ -51,6 +62,10 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={window.location.origin}
+          onError={(error) => {
+            console.error('Auth error:', error);
+            toast.error(error.message);
+          }}
         />
       </div>
     </Layout>
