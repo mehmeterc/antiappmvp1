@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,8 +21,10 @@ const Login = () => {
     checkUser();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
       if (session) {
+        toast.success('Successfully logged in!');
         navigate('/');
       }
     });
@@ -31,7 +34,7 @@ const Login = () => {
 
   return (
     <Layout>
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg mt-8">
         <h1 className="text-2xl font-bold mb-6 text-center">Welcome to AntiApp</h1>
         <Auth
           supabaseClient={supabase}
@@ -47,7 +50,7 @@ const Login = () => {
             }
           }}
           providers={[]}
-          redirectTo={`${window.location.origin}/`}
+          redirectTo={window.location.origin}
         />
       </div>
     </Layout>
