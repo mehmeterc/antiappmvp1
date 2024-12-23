@@ -34,9 +34,6 @@ const Login = () => {
         console.log('User updated:', session?.user);
       } else if (event === 'PASSWORD_RECOVERY') {
         toast.info('Please check your email for password reset instructions');
-      } else if (event === 'USER_DELETED') {
-        toast.success('Account successfully deleted');
-        navigate('/');
       }
     });
 
@@ -62,10 +59,6 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={window.location.origin}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast.error(error.message);
-          }}
         />
       </div>
     </Layout>
