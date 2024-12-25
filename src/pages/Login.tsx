@@ -40,6 +40,12 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Remove the colon from the URL and ensure proper formatting
+  const siteUrl = window.location.origin.replace(':/', '');
+  const redirectUrl = `${siteUrl}/`;
+  
+  console.log('Redirect URL:', redirectUrl); // Debug log
+
   return (
     <Layout>
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg mt-8">
@@ -58,7 +64,7 @@ const Login = () => {
             }
           }}
           providers={[]}
-          redirectTo={`${window.location.origin}/`}
+          redirectTo={redirectUrl}
         />
       </div>
     </Layout>
