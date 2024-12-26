@@ -30,8 +30,6 @@ const Login = () => {
         navigate('/');
       } else if (event === 'SIGNED_OUT') {
         toast.success('Successfully logged out!');
-      } else if (event === 'USER_UPDATED') {
-        console.log('User updated:', session?.user);
       } else if (event === 'PASSWORD_RECOVERY') {
         toast.info('Please check your email for password reset instructions');
       }
@@ -40,11 +38,12 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Remove the colon from the URL and ensure proper formatting
-  const siteUrl = window.location.origin.replace(':/', '');
-  const redirectUrl = `${siteUrl}/`;
+  // Get the current URL without any port number
+  const currentUrl = window.location.origin.split(':')[0] + '//' + window.location.hostname;
+  const redirectUrl = `${currentUrl}/`;
   
-  console.log('Redirect URL:', redirectUrl); // Debug log
+  console.log('Current URL:', currentUrl);
+  console.log('Redirect URL:', redirectUrl);
 
   return (
     <Layout>
