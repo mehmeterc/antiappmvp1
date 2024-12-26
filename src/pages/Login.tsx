@@ -38,11 +38,9 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Get the current URL without any port number
-  const currentUrl = window.location.origin.split(':')[0] + '//' + window.location.hostname;
-  const redirectUrl = `${currentUrl}/`;
+  // Use the full URL as is, without modifications
+  const redirectUrl = window.location.origin;
   
-  console.log('Current URL:', currentUrl);
   console.log('Redirect URL:', redirectUrl);
 
   return (
