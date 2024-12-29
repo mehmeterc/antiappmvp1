@@ -38,8 +38,8 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Use the full URL as is, without modifications
-  const redirectUrl = window.location.origin;
+  // Set the redirect URL to match exactly the project URL
+  const redirectUrl = 'https://f12acbef-9546-4a14-ae7c-a20670582a67.lovableproject.com';
   
   console.log('Redirect URL:', redirectUrl);
 
