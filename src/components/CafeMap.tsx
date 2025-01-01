@@ -17,10 +17,7 @@ interface CafeMapProps {
 
 // Define the type for the RPC response
 interface SecretResponse {
-  data: {
-    secret: string | null;
-  } | null;
-  error: Error | null;
+  secret: string | null;
 }
 
 export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }: CafeMapProps) => {
@@ -32,7 +29,7 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
     const initializeMap = async () => {
       try {
         // Get API key from Supabase with proper type handling
-        const { data, error } = await supabase.rpc('get_secret', {
+        const { data, error } = await supabase.rpc<SecretResponse>('get_secret', {
           secret_name: 'HERE_MAPS_API_KEY'
         });
 
