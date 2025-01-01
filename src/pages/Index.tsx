@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CafeMap } from "@/components/CafeMap";
 
 const Index = () => {
   // Get top rated cafes for highlights
@@ -29,6 +30,12 @@ const Index = () => {
 
       <div className="max-w-7xl mx-auto px-4 -mt-10 space-y-12 pb-16">
         <SearchBar />
+
+        {/* Map Section */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">Explore Nearby Spaces</h2>
+          <CafeMap cafes={BERLIN_CAFES} />
+        </section>
 
         {/* Highlights of the Week */}
         <section className="space-y-4">
