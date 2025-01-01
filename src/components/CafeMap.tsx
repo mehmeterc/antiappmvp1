@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cafe } from "@/types/cafe";
+import { Database } from "@/integrations/supabase/types";
 
 // Declare the HERE Maps types
 declare global {
@@ -15,10 +16,7 @@ interface CafeMapProps {
   centerLng?: number;
 }
 
-// Define the type for the RPC response
-interface SecretResponse {
-  secret: string | null;
-}
+type GetSecretResponse = Database["public"]["Functions"]["get_secret"]["Returns"];
 
 export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }: CafeMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -29,13 +27,13 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
     const initializeMap = async () => {
       try {
         // Get API key from Supabase with proper type handling
-        const { data, error } = await supabase.rpc<SecretResponse, { secret_name: string }>(
+        const { data, error } = await supabase.rpc(
           'get_secret',
           { secret_name: 'HERE_MAPS_API_KEY' }
         );
 
         if (error) throw error;
-        if (!data?.secret) {
+        if (!data || typeof data.secret !== 'string') {
           throw new Error('HERE Maps API key not found');
         }
 
