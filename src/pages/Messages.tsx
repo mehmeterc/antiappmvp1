@@ -1,66 +1,159 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send } from "lucide-react";
-import { MOCK_MESSAGES, MOCK_USERS, type Message, type User } from "@/data/mockMessages";
 import { toast } from "sonner";
+import { useSession } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Profile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+}
+
+interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  cafe_id?: string | null;
+}
 
 const Messages = () => {
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const session = useSession();
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const currentUserId = "1";
+  
+  // Fetch all profiles except current user
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (!session?.user?.id) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', session.user.id);
+      
+      if (error) {
+        console.error("Error fetching profiles:", error);
+        return;
+      }
+      
+      setProfiles(data);
+      console.log("Profiles fetched:", data);
+    };
 
-  const handleUserClick = (user: User) => {
-    // If clicking the same user, close the conversation
+    fetchProfiles();
+  }, [session?.user?.id]);
+
+  // Subscribe to new messages
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          console.log("New message received:", payload);
+          setMessages(prev => [...prev, payload.new as Message]);
+          toast.info("New message received!");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
+
+  // Fetch messages when user selected
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!session?.user?.id || !selectedUser) return;
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${session.user.id})`)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
+
+      setMessages(data);
+      console.log("Messages fetched:", data);
+    };
+
+    fetchMessages();
+  }, [selectedUser, session?.user?.id]);
+
+  const handleUserClick = (user: Profile) => {
     if (selectedUser?.id === user.id) {
       setSelectedUser(null);
-      console.log("Closing conversation with:", user.name);
+      console.log("Closing conversation with:", user.full_name);
     } else {
       setSelectedUser(user);
-      console.log("Opening conversation with:", user.name);
+      console.log("Opening conversation with:", user.full_name);
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || !newMessage.trim()) return;
+    if (!session?.user?.id || !selectedUser || !newMessage.trim()) return;
 
-    const message: Message = {
-      id: `${Date.now()}`,
-      senderId: currentUserId,
-      receiverId: selectedUser.id,
-      content: newMessage,
-      timestamp: new Date().toISOString(),
-    };
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: session.user.id,
+        receiver_id: selectedUser.id,
+        content: newMessage,
+      });
 
-    setMessages([...messages, message]);
+    if (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
+      return;
+    }
+
     setNewMessage("");
-    console.log("Message sent:", message);
     toast.success("Message sent!");
   };
 
-  const getConversationMessages = () => {
-    if (!selectedUser) return [];
-    return messages.filter(
-      (msg) =>
-        (msg.senderId === currentUserId && msg.receiverId === selectedUser.id) ||
-        (msg.senderId === selectedUser.id && msg.receiverId === currentUserId)
+  if (!session) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <p className="text-gray-500">Please login to use the messaging feature</p>
+        </div>
+      </Layout>
     );
-  };
+  }
 
   return (
     <Layout>
       <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-4 h-[calc(100vh-200px)]">
-        {/* Users list - Always visible on mobile */}
         <div className={`col-span-12 ${selectedUser ? 'hidden md:block' : ''} md:col-span-4 border rounded-lg overflow-hidden`}>
           <div className="p-3 border-b bg-gray-50">
             <h2 className="font-semibold text-sm">Messages</h2>
           </div>
           <div className="overflow-y-auto h-full">
-            {MOCK_USERS.filter(user => user.id !== currentUserId).map((user) => (
+            {profiles.map((user) => (
               <div
                 key={user.id}
                 className={`p-2 flex items-center gap-2 hover:bg-gray-50 cursor-pointer border-b ${
@@ -69,11 +162,11 @@ const Messages = () => {
                 onClick={() => handleUserClick(user)}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                  <AvatarImage src={user.avatar_url || undefined} />
+                  <AvatarFallback>{user.full_name?.[0] || user.email?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{user.name}</p>
+                  <p className="font-medium text-sm truncate">{user.full_name || 'Anonymous'}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
               </div>
@@ -81,17 +174,16 @@ const Messages = () => {
           </div>
         </div>
 
-        {/* Chat area */}
         <div className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col`}>
           {selectedUser ? (
             <>
               <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={selectedUser.avatar} />
-                    <AvatarFallback>{selectedUser.name[0]}</AvatarFallback>
+                    <AvatarImage src={selectedUser.avatar_url || undefined} />
+                    <AvatarFallback>{selectedUser.full_name?.[0] || selectedUser.email?.[0]}</AvatarFallback>
                   </Avatar>
-                  <p className="font-medium text-sm">{selectedUser.name}</p>
+                  <p className="font-medium text-sm">{selectedUser.full_name || 'Anonymous'}</p>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -104,8 +196,8 @@ const Messages = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {getConversationMessages().map((message) => {
-                  const isCurrentUser = message.senderId === currentUserId;
+                {messages.map((message) => {
+                  const isCurrentUser = message.sender_id === session.user.id;
                   return (
                     <div
                       key={message.id}
@@ -120,7 +212,7 @@ const Messages = () => {
                       >
                         <p className="text-sm">{message.content}</p>
                         <p className="text-xs mt-1 opacity-70">
-                          {new Date(message.timestamp).toLocaleTimeString([], { 
+                          {new Date(message.created_at).toLocaleTimeString([], { 
                             hour: '2-digit', 
                             minute: '2-digit' 
                           })}
