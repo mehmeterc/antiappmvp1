@@ -23,6 +23,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!session?.user?.id) {
+      console.log("No session found, redirecting to login");
       navigate('/login');
       return;
     }
@@ -33,19 +34,43 @@ const Profile = () => {
   const getProfile = async () => {
     try {
       setLoading(true);
-      console.log("Fetching profile for user:", session?.user?.id);
+      const userId = session?.user?.id;
+      console.log("Fetching profile for user:", userId);
       
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session?.user?.id)
-        .single();
+        .eq('id', userId)
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
 
-      if (data) {
+      if (!data) {
+        console.log("No profile found, creating new profile");
+        // Create a new profile if none exists
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: userId,
+              email: session?.user?.email,
+              full_name: "",
+              avatar_url: "",
+              payment_method: ""
+            }
+          ]);
+
+        if (insertError) throw insertError;
+
+        setProfile({
+          full_name: "",
+          email: session?.user?.email || "",
+          avatar_url: "",
+          payment_method: ""
+        });
+      } else {
         console.log("Profile data retrieved:", data);
         setProfile({
           full_name: data.full_name || "",
@@ -55,7 +80,7 @@ const Profile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error fetching/creating profile:", error);
       toast.error("Error loading profile");
     } finally {
       setLoading(false);
@@ -65,7 +90,8 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      console.log("Updating profile for user:", session?.user?.id);
+      const userId = session?.user?.id;
+      console.log("Updating profile for user:", userId);
       console.log("Profile data to update:", profile);
 
       const { error } = await supabase
@@ -76,7 +102,7 @@ const Profile = () => {
           payment_method: profile.payment_method,
           updated_at: new Date().toISOString()
         })
-        .eq('id', session?.user?.id);
+        .eq('id', userId);
 
       if (error) throw error;
       
@@ -96,10 +122,25 @@ const Profile = () => {
       if (!file) return;
 
       setLoading(true);
+      const userId = session?.user?.id;
       const fileExt = file.name.split('.').pop();
-      const filePath = `${session?.user?.id}/${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
       console.log("Uploading avatar:", filePath);
+
+      // Create avatars bucket if it doesn't exist
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .getBucket('avatars');
+
+      if (!bucketData) {
+        console.log("Creating avatars bucket");
+        const { error: createBucketError } = await supabase
+          .storage
+          .createBucket('avatars', { public: true });
+
+        if (createBucketError) throw createBucketError;
+      }
 
       // Upload image
       const { error: uploadError } = await supabase.storage
@@ -117,7 +158,7 @@ const Profile = () => {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
-        .eq('id', session?.user?.id);
+        .eq('id', userId);
 
       if (updateError) throw updateError;
 
