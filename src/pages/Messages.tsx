@@ -1,62 +1,64 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
-import { toast } from "sonner";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Profile {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  email: string | null;
-}
-
-interface Message {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  created_at: string;
-  cafe_id?: string | null;
-}
+import { UserList } from "@/components/messages/UserList";
+import { MessageList } from "@/components/messages/MessageList";
+import { MessageInput } from "@/components/messages/MessageInput";
+import { Button } from "@/components/ui/button";
+import { Profile } from "@/types/profile";
+import { Message } from "@/types/message";
+import { toast } from "sonner";
 
 const Messages = () => {
   const session = useSession();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
-  const [newMessage, setNewMessage] = useState("");
-  
-  // Fetch all profiles except current user
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      if (!session?.user?.id) return;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', session.user.id);
-      
-      if (error) {
-        console.error("Error fetching profiles:", error);
-        return;
-      }
-      
-      setProfiles(data);
-      console.log("Profiles fetched:", data);
-    };
+  const [senderProfile, setSenderProfile] = useState<Profile | null>(null);
 
-    fetchProfiles();
-  }, [session?.user?.id]);
-
-  // Subscribe to new messages
   useEffect(() => {
     if (!session?.user?.id) return;
 
+    const fetchCurrentUserProfile = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching current user profile:", error);
+        return;
+      }
+
+      setSenderProfile(data);
+    };
+
+    fetchCurrentUserProfile();
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id || !selectedUser) return;
+
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${session.user.id})`)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
+
+      setMessages(data);
+      console.log("Messages fetched:", data);
+    };
+
+    fetchMessages();
+
+    // Subscribe to new messages
     const channel = supabase
       .channel('messages')
       .on(
@@ -78,51 +80,17 @@ const Messages = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]);
-
-  // Fetch messages when user selected
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!session?.user?.id || !selectedUser) return;
-
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${session.user.id})`)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error("Error fetching messages:", error);
-        return;
-      }
-
-      setMessages(data);
-      console.log("Messages fetched:", data);
-    };
-
-    fetchMessages();
   }, [selectedUser, session?.user?.id]);
 
-  const handleUserClick = (user: Profile) => {
-    if (selectedUser?.id === user.id) {
-      setSelectedUser(null);
-      console.log("Closing conversation with:", user.full_name);
-    } else {
-      setSelectedUser(user);
-      console.log("Opening conversation with:", user.full_name);
-    }
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session?.user?.id || !selectedUser || !newMessage.trim()) return;
+  const handleSendMessage = async (content: string) => {
+    if (!session?.user?.id || !selectedUser) return;
 
     const { error } = await supabase
       .from('messages')
       .insert({
         sender_id: session.user.id,
         receiver_id: selectedUser.id,
-        content: newMessage,
+        content,
       });
 
     if (error) {
@@ -130,9 +98,6 @@ const Messages = () => {
       toast.error("Failed to send message");
       return;
     }
-
-    setNewMessage("");
-    toast.success("Message sent!");
   };
 
   if (!session) {
@@ -152,26 +117,11 @@ const Messages = () => {
           <div className="p-3 border-b bg-gray-50">
             <h2 className="font-semibold text-sm">Messages</h2>
           </div>
-          <div className="overflow-y-auto h-full">
-            {profiles.map((user) => (
-              <div
-                key={user.id}
-                className={`p-2 flex items-center gap-2 hover:bg-gray-50 cursor-pointer border-b ${
-                  selectedUser?.id === user.id ? "bg-gray-100" : ""
-                }`}
-                onClick={() => handleUserClick(user)}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar_url || undefined} />
-                  <AvatarFallback>{user.full_name?.[0] || user.email?.[0]}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{user.full_name || 'Anonymous'}</p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <UserList
+            currentUserId={session.user.id}
+            onUserSelect={setSelectedUser}
+            selectedUser={selectedUser}
+          />
         </div>
 
         <div className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col`}>
@@ -179,10 +129,6 @@ const Messages = () => {
             <>
               <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={selectedUser.avatar_url || undefined} />
-                    <AvatarFallback>{selectedUser.full_name?.[0] || selectedUser.email?.[0]}</AvatarFallback>
-                  </Avatar>
                   <p className="font-medium text-sm">{selectedUser.full_name || 'Anonymous'}</p>
                 </div>
                 <Button 
@@ -195,47 +141,13 @@ const Messages = () => {
                 </Button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => {
-                  const isCurrentUser = message.sender_id === session.user.id;
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-lg p-2 ${
-                          isCurrentUser
-                            ? "bg-primary text-white"
-                            : "bg-gray-100"
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                        <p className="text-xs mt-1 opacity-70">
-                          {new Date(message.created_at).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <MessageList 
+                messages={messages}
+                senderProfile={senderProfile}
+                receiverProfile={selectedUser}
+              />
 
-              <form onSubmit={handleSendMessage} className="p-2 border-t">
-                <div className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="text-sm"
-                  />
-                  <Button type="submit" size="icon">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </form>
+              <MessageInput onSendMessage={handleSendMessage} />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
