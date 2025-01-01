@@ -1,143 +1,114 @@
-import { useEffect, useRef, useState } from 'react';
-import { Card } from './ui/card';
-import { useToast } from './ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-
-declare global {
-  interface Window {
-    H: any;
-  }
-}
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Cafe } from "@/types/cafe";
 
 interface CafeMapProps {
-  cafes: Array<{
-    id: string;
-    title: string;
-    address: string;
-    coordinates: { lat: number; lng: number };
-  }>;
+  cafes: Cafe[];
   centerLat?: number;
   centerLng?: number;
 }
 
 // Define the type for the RPC response
-type SecretResponse = {
-  secret: string;
-} | null;
+interface SecretResponse {
+  data: {
+    secret: string;
+  } | null;
+  error: Error | null;
+}
 
 export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }: CafeMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeMap = async () => {
       try {
         // Get API key from Supabase with proper type handling
-        const { data, error } = await supabase.rpc('get_secret', {
+        const response: SecretResponse = await supabase.rpc('get_secret', {
           secret_name: 'HERE_MAPS_API_KEY'
-        }) as { data: SecretResponse; error: Error | null };
+        });
 
-        if (error) throw error;
-        if (!data || !data.secret) {
+        if (response.error) throw response.error;
+        if (!response.data || !response.data.secret) {
           throw new Error('HERE Maps API key not found');
         }
 
         // Initialize the platform with the API key
         const platform = new window.H.service.Platform({
-          apikey: data.secret
+          apikey: response.data.secret
         });
 
         // Get default map layers
         const defaultLayers = platform.createDefaultLayers();
 
-        // Create map instance
-        const mapInstance = new window.H.Map(
+        // Create a new map instance
+        const newMap = new window.H.Map(
           mapRef.current,
           defaultLayers.vector.normal.map,
           {
-            center: { lat: centerLat, lng: centerLng },
             zoom: 13,
-            pixelRatio: window.devicePixelRatio || 1
+            center: { lat: centerLat, lng: centerLng }
           }
         );
 
-        // Add map behavior (pan, zoom, etc.)
-        const behavior = new window.H.mapevents.Behavior(
-          new window.H.mapevents.MapEvents(mapInstance)
-        );
+        // Add window resize handler
+        window.addEventListener('resize', () => newMap.getViewPort().resize());
 
-        // Add UI components
-        const ui = new window.H.ui.UI.createDefault(mapInstance, defaultLayers);
-
-        // Create marker group
-        const markerGroup = new window.H.map.Group();
-        mapInstance.addObject(markerGroup);
+        // Add map interaction and UI controls
+        new window.H.mapevents.Behavior(new window.H.mapevents.MapEvents(newMap));
+        const ui = window.H.ui.UI.createDefault(newMap, defaultLayers);
 
         // Add markers for each cafe
         cafes.forEach(cafe => {
-          const marker = new window.H.map.Marker({
-            lat: cafe.coordinates.lat,
-            lng: cafe.coordinates.lng
+          const [lat, lng] = cafe.coordinates;
+          
+          // Create marker
+          const marker = new window.H.map.Marker({ lat, lng });
+          
+          // Create info bubble
+          const bubble = new window.H.ui.InfoBubble({ lat, lng }, {
+            content: `
+              <div style="padding: 10px;">
+                <h3 style="margin: 0 0 8px;">${cafe.title}</h3>
+                <p style="margin: 0;">${cafe.address}</p>
+              </div>
+            `
           });
-
-          // Add info bubble to marker
-          marker.addEventListener('tap', (evt: any) => {
-            const bubble = new window.H.ui.InfoBubble(evt.target.getGeometry(), {
-              content: `<div style="padding: 8px;"><b>${cafe.title}</b><br/>${cafe.address}</div>`
-            });
+          
+          // Add event listener to marker
+          marker.addEventListener('tap', () => {
             ui.addBubble(bubble);
           });
-
-          markerGroup.addObject(marker);
+          
+          // Add marker to map
+          newMap.addObject(marker);
         });
 
-        // Request user's location
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const userLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-              };
-              mapInstance.setCenter(userLocation);
-            },
-            (error) => {
-              console.log('Geolocation error:', error);
-              toast({
-                title: "Location access denied",
-                description: "Using default map center location",
-              });
-            }
-          );
-        }
-
-        setMap(mapInstance);
-
-        // Cleanup function
-        return () => {
-          if (mapInstance) {
-            mapInstance.dispose();
-          }
-        };
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        toast({
-          title: "Error loading map",
-          description: "Please try again later",
-          variant: "destructive"
-        });
+        setMap(newMap);
+      } catch (err) {
+        console.error('Error initializing map:', err);
+        setError(err instanceof Error ? err.message : 'Failed to initialize map');
       }
     };
 
     if (mapRef.current && !map) {
       initializeMap();
     }
-  }, [centerLat, centerLng, cafes, map, toast]);
+
+    // Cleanup function
+    return () => {
+      if (map) {
+        map.dispose();
+      }
+    };
+  }, [cafes, centerLat, centerLng, map]);
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error: {error}</div>;
+  }
 
   return (
-    <Card className="w-full h-[400px] overflow-hidden">
-      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
-    </Card>
+    <div ref={mapRef} style={{ width: '100%', height: '400px' }} />
   );
 };
