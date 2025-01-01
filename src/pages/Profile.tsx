@@ -35,6 +35,12 @@ const Profile = () => {
     try {
       setLoading(true);
       const userId = session?.user?.id;
+      
+      if (!userId) {
+        console.error("No user ID found");
+        return;
+      }
+
       console.log("Fetching profile for user:", userId);
       
       const { data, error } = await supabase
@@ -50,25 +56,29 @@ const Profile = () => {
       if (!data) {
         console.log("No profile found, creating new profile");
         // Create a new profile if none exists
-        const { error: insertError } = await supabase
+        const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
-          .insert([
-            {
-              id: userId,
-              email: session?.user?.email,
-              full_name: "",
-              avatar_url: "",
-              payment_method: ""
-            }
-          ]);
+          .insert({
+            id: userId,
+            email: session?.user?.email,
+            full_name: "",
+            avatar_url: "",
+            payment_method: ""
+          })
+          .select()
+          .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+          throw insertError;
+        }
 
+        console.log("New profile created:", newProfile);
         setProfile({
-          full_name: "",
-          email: session?.user?.email || "",
-          avatar_url: "",
-          payment_method: ""
+          full_name: newProfile.full_name || "",
+          email: newProfile.email || "",
+          avatar_url: newProfile.avatar_url || "",
+          payment_method: newProfile.payment_method || ""
         });
       } else {
         console.log("Profile data retrieved:", data);
@@ -91,6 +101,12 @@ const Profile = () => {
     try {
       setLoading(true);
       const userId = session?.user?.id;
+      
+      if (!userId) {
+        console.error("No user ID found");
+        return;
+      }
+
       console.log("Updating profile for user:", userId);
       console.log("Profile data to update:", profile);
 
@@ -123,6 +139,12 @@ const Profile = () => {
 
       setLoading(true);
       const userId = session?.user?.id;
+      
+      if (!userId) {
+        console.error("No user ID found");
+        return;
+      }
+
       const fileExt = file.name.split('.').pop();
       const filePath = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
