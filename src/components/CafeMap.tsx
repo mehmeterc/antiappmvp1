@@ -29,9 +29,10 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
     const initializeMap = async () => {
       try {
         // Get API key from Supabase with proper type handling
-        const { data, error } = await supabase.rpc<SecretResponse>('get_secret', {
-          secret_name: 'HERE_MAPS_API_KEY'
-        });
+        const { data, error } = await supabase.rpc<SecretResponse, { secret_name: string }>(
+          'get_secret',
+          { secret_name: 'HERE_MAPS_API_KEY' }
+        );
 
         if (error) throw error;
         if (!data?.secret) {
