@@ -33,8 +33,10 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
         );
 
         if (error) throw error;
-        if (!data || typeof data.secret !== 'string') {
-          throw new Error('HERE Maps API key not found');
+        
+        // Type guard to ensure data is the correct shape
+        if (!data || typeof data !== 'object' || !('secret' in data) || typeof data.secret !== 'string') {
+          throw new Error('HERE Maps API key not found or invalid');
         }
 
         // Initialize the platform with the API key
