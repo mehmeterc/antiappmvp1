@@ -20,6 +20,11 @@ interface CafeMapProps {
   centerLng?: number;
 }
 
+// Define the type for the RPC response
+type SecretResponse = {
+  secret: string;
+} | null;
+
 export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }: CafeMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
@@ -28,16 +33,19 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
   useEffect(() => {
     const initializeMap = async () => {
       try {
-        // Get API key from Supabase
-        const { data: { secret }, error } = await supabase.rpc('get_secret', {
+        // Get API key from Supabase with proper type handling
+        const { data, error } = await supabase.rpc('get_secret', {
           secret_name: 'HERE_MAPS_API_KEY'
-        });
+        }) as { data: SecretResponse; error: Error | null };
 
         if (error) throw error;
+        if (!data || !data.secret) {
+          throw new Error('HERE Maps API key not found');
+        }
 
         // Initialize the platform with the API key
         const platform = new window.H.service.Platform({
-          apikey: secret
+          apikey: data.secret
         });
 
         // Get default map layers
