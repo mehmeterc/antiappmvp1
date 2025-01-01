@@ -32,18 +32,18 @@ export const CafeMap = ({ cafes, centerLat = 52.520008, centerLng = 13.404954 }:
     const initializeMap = async () => {
       try {
         // Get API key from Supabase with proper type handling
-        const response: SecretResponse = await supabase.rpc('get_secret', {
+        const { data, error } = await supabase.rpc('get_secret', {
           secret_name: 'HERE_MAPS_API_KEY'
         });
 
-        if (response.error) throw response.error;
-        if (!response.data?.secret) {
+        if (error) throw error;
+        if (!data?.secret) {
           throw new Error('HERE Maps API key not found');
         }
 
         // Initialize the platform with the API key
         const platform = new window.H.service.Platform({
-          apikey: response.data.secret
+          apikey: data.secret
         });
 
         // Get default map layers
