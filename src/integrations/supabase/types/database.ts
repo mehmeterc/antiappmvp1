@@ -1,3 +1,11 @@
+import { 
+  BookingHistoryTable,
+  MessagesTable,
+  ProfilesTable,
+  ReviewsTable,
+  SavedCafesTable 
+} from './tables';
+
 export type Json =
   | string
   | number
