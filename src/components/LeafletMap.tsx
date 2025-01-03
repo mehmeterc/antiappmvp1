@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon, LatLngExpression } from 'leaflet';
+import { Icon, LatLngExpression, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
 
@@ -26,41 +25,45 @@ export const LeafletMap = ({ cafes }: LeafletMapProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position} 
+        center={position as [number, number]} 
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        {cafes.map((cafe) => {
-          const cafePosition: LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
-          return (
-            <Marker 
-              key={cafe.id}
-              position={cafePosition}
-              icon={customIcon}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-semibold">{cafe.title}</h3>
-                  <p className="text-sm text-gray-600">{cafe.address}</p>
-                  <p className="text-sm mt-1">⭐️ {cafe.rating}</p>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${cafe.coordinates.lat},${cafe.coordinates.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-500 hover:text-blue-700 mt-2 inline-block"
-                  >
-                    Open in Google Maps
-                  </a>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+        {({ map }: { map: LeafletMap }) => (
+          <>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {cafes.map((cafe) => {
+              const cafePosition: LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
+              return (
+                <Marker 
+                  key={cafe.id}
+                  position={cafePosition as [number, number]}
+                  icon={customIcon}
+                >
+                  <Popup>
+                    <div className="p-2">
+                      <h3 className="font-semibold">{cafe.title}</h3>
+                      <p className="text-sm text-gray-600">{cafe.address}</p>
+                      <p className="text-sm mt-1">⭐️ {cafe.rating}</p>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${cafe.coordinates.lat},${cafe.coordinates.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-500 hover:text-blue-700 mt-2 inline-block"
+                      >
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </>
+        )}
       </MapContainer>
     </div>
   );
