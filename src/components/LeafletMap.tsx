@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
+import { useEffect } from 'react';
 
 interface LeafletMapProps {
   cafes: Cafe[];
@@ -22,13 +23,25 @@ export const LeafletMap = ({ cafes }: LeafletMapProps) => {
     shadowSize: [41, 41]
   });
 
+  // Add leaflet CSS to document head
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position} 
+        center={position}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
+        className="map-container"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
