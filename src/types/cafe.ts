@@ -23,5 +23,5 @@ export interface Cafe {
     lat: number;
     lng: number;
   };
-  reviews?: Review[]; // Added reviews as optional property
+  reviews?: Review[];
 }
