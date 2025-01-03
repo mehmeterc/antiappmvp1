@@ -37,11 +37,10 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        defaultCenter={position}
+        center={position}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
-        className="map-container"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
