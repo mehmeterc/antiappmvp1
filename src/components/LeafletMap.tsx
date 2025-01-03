@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
 import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
@@ -6,6 +6,12 @@ import { useEffect } from 'react';
 
 interface MapComponentProps {
   cafes: Cafe[];
+}
+
+// Extend MapContainerProps to include our custom props
+interface CustomMapContainerProps extends MapContainerProps {
+  center: LatLngExpression;
+  zoom: number;
 }
 
 export const LeafletMap = ({ cafes }: MapComponentProps) => {
@@ -37,7 +43,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position as [number, number]}
+        center={position}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
@@ -52,7 +58,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
           return (
             <Marker 
               key={cafe.id}
-              position={cafePosition as [number, number]}
+              position={cafePosition}
               icon={customIcon}
             >
               <Popup>
