@@ -3,14 +3,20 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
+import type { MapContainerProps } from 'react-leaflet';
 
 interface MapComponentProps {
   cafes: Cafe[];
 }
 
+// Extend MapContainerProps to include center property
+interface ExtendedMapContainerProps extends MapContainerProps {
+  center: L.LatLngExpression;
+}
+
 export const LeafletMap = ({ cafes }: MapComponentProps) => {
   // Berlin center coordinates
-  const position = [52.52, 13.405];
+  const position: L.LatLngExpression = [52.52, 13.405];
 
   // Custom marker icon to fix the missing icon issue
   const customIcon = new L.Icon({
@@ -37,7 +43,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position as [number, number]}
+        center={position}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
@@ -48,7 +54,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {cafes.map((cafe) => {
-          const cafePosition = [cafe.coordinates.lat, cafe.coordinates.lng] as [number, number];
+          const cafePosition: L.LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
           return (
             <Marker 
               key={cafe.id}
