@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
@@ -6,12 +6,6 @@ import { useEffect } from 'react';
 
 interface MapComponentProps {
   cafes: Cafe[];
-}
-
-// Extend MapContainerProps to include our custom props
-interface CustomMapContainerProps extends MapContainerProps {
-  center: LatLngExpression;
-  zoom: number;
 }
 
 export const LeafletMap = ({ cafes }: MapComponentProps) => {
@@ -50,8 +44,8 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
         className="map-container"
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {cafes.map((cafe) => {
           const cafePosition: LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
