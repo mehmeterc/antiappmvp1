@@ -59,6 +59,10 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
             src={image}
             alt={title}
             className="w-full h-48 object-cover"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.src = "https://images.unsplash.com/photo-1554118811-1e0d58224f24";
+            }}
           />
           <Button
             variant="ghost"
@@ -77,7 +81,11 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
         </div>
         <CardHeader>
           <h3 className="text-lg font-semibold">{title}</h3>
-          <AddressLink address={address} className="text-sm text-gray-500" />
+          <AddressLink 
+            address={address} 
+            cafeName={title}
+            className="text-sm text-gray-500" 
+          />
         </CardHeader>
         {isDetailed && (
           <CardContent>

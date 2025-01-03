@@ -3,21 +3,27 @@ import { MapPin } from "lucide-react";
 
 interface AddressLinkProps {
   address: string;
+  cafeName: string;
   className?: string;
 }
 
-export const AddressLink = ({ address, className = "" }: AddressLinkProps) => {
+export const AddressLink = ({ address, cafeName, className = "" }: AddressLinkProps) => {
   const [isHovered, setIsHovered] = useState(false);
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const encodedAddress = encodeURIComponent(address);
+    
+    // Combine cafe name and address for better findability
+    const searchQuery = `${cafeName}, ${address}`;
+    const encodedQuery = encodeURIComponent(searchQuery);
+    
     // Check if user is on iOS for Apple Maps
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const mapUrl = isIOS
-      ? `maps://maps.apple.com/?q=${encodedAddress}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      ? `maps://maps.apple.com/?q=${encodedQuery}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+    
     window.open(mapUrl, '_blank');
   };
 
