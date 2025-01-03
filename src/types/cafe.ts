@@ -23,7 +23,5 @@ export interface Cafe {
     lat: number;
     lng: number;
   };
-  reviews?: Review[]; // Made optional with ?
-  peakHours?: string;
-  noiseLevel?: string;
+  reviews?: Review[]; // Added reviews as optional property
 }

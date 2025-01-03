@@ -134,7 +134,11 @@ const CafeDetails = () => {
             <div className="p-6 space-y-6">
               <div>
                 <h1 className="text-3xl font-bold mb-2">{cafe.title}</h1>
-                <AddressLink address={cafe.address} className="text-gray-600" />
+                <AddressLink 
+                  address={cafe.address} 
+                  cafeName={cafe.title} 
+                  className="text-gray-600" 
+                />
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -166,7 +170,7 @@ const CafeDetails = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <ReviewsManager cafeId={cafe.id} initialReviews={cafe.reviews} />
+            <ReviewsManager cafeId={cafe.id} initialReviews={cafe.reviews || []} />
           </div>
         </div>
 
