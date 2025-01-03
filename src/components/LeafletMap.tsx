@@ -1,14 +1,14 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon, LatLngExpression, Map as LeafletMap } from 'leaflet';
+import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Cafe } from '@/types/cafe';
 import { useEffect } from 'react';
 
-interface LeafletMapProps {
+interface MapComponentProps {
   cafes: Cafe[];
 }
 
-export const LeafletMap = ({ cafes }: LeafletMapProps) => {
+export const LeafletMap = ({ cafes }: MapComponentProps) => {
   // Berlin center coordinates
   const position: LatLngExpression = [52.52, 13.405];
 
@@ -37,8 +37,8 @@ export const LeafletMap = ({ cafes }: LeafletMapProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        defaultCenter={position}
-        defaultZoom={13} 
+        center={position}
+        zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
         className="map-container"
