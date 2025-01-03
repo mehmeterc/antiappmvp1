@@ -11,7 +11,8 @@ export const CAFES_SOUTH = [
     priceRange: "premium",
     amenities: ["wifi", "power", "coffee", "cake"],
     tags: ["specialty coffee", "cake", "roastery"],
-    coordinates: { lat: 52.497377, lng: 13.428041 }
+    coordinates: { lat: 52.497377, lng: 13.428041 },
+    reviews: []
   },
   {
     id: "17",
@@ -25,7 +26,8 @@ export const CAFES_SOUTH = [
     priceRange: "budget",
     amenities: ["wifi", "coffee", "food", "bar"],
     tags: ["cozy", "vintage", "all-day"],
-    coordinates: { lat: 52.499730, lng: 13.422150 }
+    coordinates: { lat: 52.499730, lng: 13.422150 },
+    reviews: []
   },
   // ... 15 more real cafes in South Berlin
 ];

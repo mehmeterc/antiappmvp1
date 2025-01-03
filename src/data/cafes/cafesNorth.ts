@@ -11,7 +11,8 @@ export const CAFES_NORTH = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "quiet", "focus"],
     tags: ["specialty coffee", "minimalist", "roastery"],
-    coordinates: { lat: 52.527977, lng: 13.399520 }
+    coordinates: { lat: 52.527977, lng: 13.399520 },
+    reviews: []
   },
   {
     id: "2",
@@ -25,7 +26,8 @@ export const CAFES_NORTH = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "community"],
     tags: ["coffee", "roastery", "specialty"],
-    coordinates: { lat: 52.541512, lng: 13.409894 }
+    coordinates: { lat: 52.541512, lng: 13.409894 },
+    reviews: []
   },
   // ... 15 more real cafes in North Berlin
 ];

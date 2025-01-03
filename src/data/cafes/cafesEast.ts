@@ -11,7 +11,8 @@ export const CAFES_EAST = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "food"],
     tags: ["brunch", "coffee", "australian"],
-    coordinates: { lat: 52.508670, lng: 13.458990 }
+    coordinates: { lat: 52.508670, lng: 13.458990 },
+    reviews: []
   },
   {
     id: "32",
@@ -25,7 +26,8 @@ export const CAFES_EAST = [
     priceRange: "premium",
     amenities: ["wifi", "coffee", "cake", "view"],
     tags: ["historic", "traditional", "views"],
-    coordinates: { lat: 52.503880, lng: 13.327920 }
+    coordinates: { lat: 52.503880, lng: 13.327920 },
+    reviews: []
   },
   // ... 15 more real cafes in East Berlin
 ];
