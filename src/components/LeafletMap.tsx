@@ -37,7 +37,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position}
+        center={position as [number, number]}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
@@ -52,7 +52,7 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
           return (
             <Marker 
               key={cafe.id}
-              position={cafePosition}
+              position={cafePosition as [number, number]}
               icon={customIcon}
             >
               <Popup>
