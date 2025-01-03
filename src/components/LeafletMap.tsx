@@ -37,22 +37,22 @@ export const LeafletMap = ({ cafes }: MapComponentProps) => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer 
-        center={position}
+        center={position as [number, number]}
         zoom={13} 
         scrollWheelZoom={false}
         style={{ height: '100%', width: '100%' }}
         className="map-container"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {cafes.map((cafe) => {
           const cafePosition: LatLngExpression = [cafe.coordinates.lat, cafe.coordinates.lng];
           return (
             <Marker 
               key={cafe.id}
-              position={cafePosition}
+              position={cafePosition as [number, number]}
               icon={customIcon}
             >
               <Popup>
