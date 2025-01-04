@@ -50,11 +50,6 @@ const Login = () => {
         console.log('User updated:', session);
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed:', session);
-      } else if (event === 'USER_DELETED') {
-        toast.info('Your account has been deleted');
-      } else if (event === 'SIGNED_IN_ERROR') {
-        console.error('Sign in error:', session);
-        toast.error('Invalid login credentials. Please check your email and password.');
       }
     });
 
