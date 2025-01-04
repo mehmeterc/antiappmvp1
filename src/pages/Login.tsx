@@ -12,16 +12,22 @@ const Login = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Error checking session:', sessionError);
-        return;
-      }
-      
-      console.log('Current session:', session);
-      if (session) {
-        navigate('/');
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error checking session:', sessionError);
+          toast.error('Error checking session. Please try again.');
+          return;
+        }
+        
+        console.log('Current session:', session);
+        if (session) {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Unexpected error during session check:', error);
+        toast.error('An unexpected error occurred. Please try again.');
       }
     };
 
@@ -44,6 +50,11 @@ const Login = () => {
         console.log('User updated:', session);
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed:', session);
+      } else if (event === 'USER_DELETED') {
+        toast.info('Your account has been deleted');
+      } else if (event === 'SIGNED_IN_ERROR') {
+        console.error('Sign in error:', session);
+        toast.error('Invalid login credentials. Please check your email and password.');
       }
     });
 
@@ -100,6 +111,16 @@ const Login = () => {
                 loading_button_label: 'Signing in ...',
                 social_provider_text: 'Sign in with {{provider}}',
                 link_text: 'Already have an account? Sign in',
+              },
+              sign_up: {
+                email_label: 'Email',
+                password_label: 'Create a Password',
+                email_input_placeholder: 'Your email',
+                password_input_placeholder: 'Create a password',
+                button_label: 'Sign up',
+                loading_button_label: 'Signing up ...',
+                social_provider_text: 'Sign up with {{provider}}',
+                link_text: "Don't have an account? Sign up",
               },
             },
           }}
