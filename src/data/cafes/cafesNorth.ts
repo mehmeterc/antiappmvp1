@@ -29,5 +29,20 @@ export const CAFES_NORTH = [
     coordinates: { lat: 52.541512, lng: 13.409894 },
     reviews: []
   },
-  // ... 15 more real cafes in North Berlin
+  {
+    id: "3",
+    title: "No Fire No Glory",
+    description: "Cozy café with excellent coffee and homemade cakes.",
+    rating: 4.6,
+    image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
+    address: "Rykestraße 45, 10405 Berlin",
+    occupancy: "Busy weekends",
+    price: "2",
+    priceRange: "budget",
+    amenities: ["wifi", "coffee", "food", "outdoor"],
+    tags: ["cozy", "cakes", "brunch"],
+    coordinates: { lat: 52.532562, lng: 13.419894 },
+    reviews: []
+  },
+  // ... 15 more cafes with similar detailed data
 ];

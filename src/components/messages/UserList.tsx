@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
+import { Badge } from "@/components/ui/badge";
 
 interface UserListProps {
   currentUserId: string;
@@ -11,24 +12,54 @@ interface UserListProps {
 
 export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserListProps) => {
   const [users, setUsers] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', currentUserId);
-      
-      if (error) {
-        console.error("Error fetching users:", error);
-        return;
+      try {
+        setLoading(true);
+        console.log("Fetching users for UserList");
+        
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .neq('id', currentUserId);
+        
+        if (error) {
+          console.error("Error fetching users:", error);
+          return;
+        }
+        
+        console.log("Users fetched:", data);
+        setUsers(data || []);
+      } catch (error) {
+        console.error("Error in fetchUsers:", error);
+      } finally {
+        setLoading(false);
       }
-      
-      console.log("Users fetched:", data);
-      setUsers(data || []);
     };
 
     fetchUsers();
+
+    // Subscribe to profile changes
+    const channel = supabase
+      .channel('public:profiles')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles' 
+        }, 
+        (payload) => {
+          console.log('Profile change received:', payload);
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentUserId]);
 
   const getDisplayName = (user: Profile) => {
@@ -38,6 +69,22 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
       ? `${names[0]} ${names[names.length - 1][0]}.`
       : names[0];
   };
+
+  if (loading) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Loading users...
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No other users found
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-y-auto h-full">
@@ -51,12 +98,17 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
         >
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.avatar_url || undefined} />
-            <AvatarFallback>{user.full_name?.[0] || user.email?.[0]}</AvatarFallback>
+            <AvatarFallback>{user.full_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm truncate">{getDisplayName(user)}</p>
             <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
+          {user.id === selectedUser?.id && (
+            <Badge variant="secondary" className="ml-auto">
+              Selected
+            </Badge>
+          )}
         </div>
       ))}
     </div>

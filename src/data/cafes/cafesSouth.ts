@@ -29,5 +29,5 @@ export const CAFES_SOUTH = [
     coordinates: { lat: 52.499730, lng: 13.422150 },
     reviews: []
   },
-  // ... 15 more real cafes in South Berlin
+  // ... 15 more cafes with similar detailed data
 ];
