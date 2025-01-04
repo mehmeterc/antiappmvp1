@@ -10,24 +10,26 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Login component mounted');
+    
     // Check if user is already logged in
     const checkUser = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('Error checking session:', sessionError);
-          toast.error('Error checking session. Please try again.');
+          console.error('Session check error:', sessionError);
+          toast.error('Error checking login status');
           return;
         }
         
-        console.log('Current session:', session);
         if (session) {
+          console.log('User already logged in, redirecting to home');
           navigate('/');
         }
       } catch (error) {
         console.error('Unexpected error during session check:', error);
-        toast.error('An unexpected error occurred. Please try again.');
+        toast.error('An unexpected error occurred');
       }
     };
 
@@ -37,19 +39,27 @@ const Login = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       
-      if (event === 'SIGNED_IN' && session) {
-        console.log('Sign in successful:', session);
-        toast.success('Successfully logged in!');
-        navigate('/');
-      } else if (event === 'SIGNED_OUT') {
-        console.log('Sign out successful');
-        toast.success('Successfully logged out!');
-      } else if (event === 'PASSWORD_RECOVERY') {
-        toast.info('Please check your email for password reset instructions');
-      } else if (event === 'USER_UPDATED') {
-        console.log('User updated:', session);
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed:', session);
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session) {
+            console.log('Sign in successful:', session);
+            toast.success('Successfully logged in!');
+            navigate('/');
+          }
+          break;
+        case 'SIGNED_OUT':
+          console.log('Sign out successful');
+          toast.success('Successfully logged out!');
+          break;
+        case 'PASSWORD_RECOVERY':
+          toast.info('Please check your email for password reset instructions');
+          break;
+        case 'USER_UPDATED':
+          console.log('User profile updated');
+          break;
+        case 'TOKEN_REFRESHED':
+          console.log('Session token refreshed');
+          break;
       }
     });
 
@@ -58,10 +68,6 @@ const Login = () => {
       subscription.unsubscribe();
     };
   }, [navigate]);
-
-  // Get the current URL for redirect
-  const redirectUrl = window.location.origin;
-  console.log('Redirect URL:', redirectUrl);
 
   return (
     <Layout>
@@ -94,7 +100,7 @@ const Login = () => {
             },
           }}
           providers={[]}
-          redirectTo={redirectUrl}
+          redirectTo={window.location.origin}
           localization={{
             variables: {
               sign_in: {
