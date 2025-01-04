@@ -61,13 +61,6 @@ const Login = () => {
         case 'TOKEN_REFRESHED':
           console.log('Session token refreshed');
           break;
-        case 'USER_DELETED':
-          console.log('User account deleted');
-          toast.info('Account deleted successfully');
-          break;
-        case 'INITIAL_SESSION':
-          console.log('Initial session loaded');
-          break;
         default:
           console.log('Unhandled auth event:', event);
       }
@@ -111,10 +104,6 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={window.location.origin}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast.error(error.message || 'An error occurred during authentication');
-          }}
           localization={{
             variables: {
               sign_in: {
