@@ -17,10 +17,14 @@ const Messages = () => {
   const [senderProfile, setSenderProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+      console.log("No session found");
+      return;
+    }
 
     const fetchCurrentUserProfile = async () => {
       try {
+        console.log("Fetching current user profile for ID:", session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -33,6 +37,7 @@ const Messages = () => {
           return;
         }
 
+        console.log("Current user profile fetched:", data);
         setSenderProfile(data);
       } catch (error) {
         console.error("Error in fetchCurrentUserProfile:", error);
@@ -43,10 +48,14 @@ const Messages = () => {
   }, [session?.user?.id]);
 
   useEffect(() => {
-    if (!session?.user?.id || !selectedUser) return;
+    if (!session?.user?.id || !selectedUser) {
+      console.log("No session or selected user");
+      return;
+    }
 
     const fetchMessages = async () => {
       try {
+        console.log("Fetching messages between", session.user.id, "and", selectedUser.id);
         const { data, error } = await supabase
           .from('messages')
           .select('*')
@@ -59,8 +68,8 @@ const Messages = () => {
           return;
         }
 
-        setMessages(data);
         console.log("Messages fetched:", data);
+        setMessages(data || []);
       } catch (error) {
         console.error("Error in fetchMessages:", error);
       }

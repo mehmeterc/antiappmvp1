@@ -5,7 +5,7 @@ import { Send } from "lucide-react";
 import { toast } from "sonner";
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<void>;
   disabled?: boolean;
 }
 
