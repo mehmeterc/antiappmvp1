@@ -12,7 +12,13 @@ const Login = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Error checking session:', sessionError);
+        return;
+      }
+      
       console.log('Current session:', session);
       if (session) {
         navigate('/');
@@ -26,21 +32,29 @@ const Login = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === 'SIGNED_IN' && session) {
+        console.log('Sign in successful:', session);
         toast.success('Successfully logged in!');
         navigate('/');
       } else if (event === 'SIGNED_OUT') {
+        console.log('Sign out successful');
         toast.success('Successfully logged out!');
       } else if (event === 'PASSWORD_RECOVERY') {
         toast.info('Please check your email for password reset instructions');
+      } else if (event === 'USER_UPDATED') {
+        console.log('User updated:', session);
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed:', session);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
-  // Set the redirect URL to match exactly the project URL
-  const redirectUrl = 'https://f12acbef-9546-4a14-ae7c-a20670582a67.lovableproject.com';
-  
+  // Get the current URL for redirect
+  const redirectUrl = window.location.origin;
   console.log('Redirect URL:', redirectUrl);
 
   return (
@@ -58,10 +72,28 @@ const Login = () => {
                   brandAccent: '#333333',
                 }
               }
-            }
+            },
+            // Add some style improvements
+            style: {
+              button: {
+                borderRadius: '6px',
+                height: '40px',
+              },
+              input: {
+                borderRadius: '6px',
+                height: '40px',
+              },
+              anchor: {
+                color: '#000000',
+              },
+            },
           }}
           providers={[]}
           redirectTo={redirectUrl}
+          onError={(error) => {
+            console.error('Auth error:', error);
+            toast.error(error.message || 'An error occurred during authentication');
+          }}
         />
       </div>
     </Layout>
