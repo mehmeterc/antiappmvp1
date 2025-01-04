@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserListProps {
   currentUserId: string;
@@ -23,7 +24,8 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .neq('id', currentUserId);
+          .neq('id', currentUserId)
+          .order('full_name');
         
         if (error) {
           console.error("Error fetching users:", error);
@@ -63,7 +65,7 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
   }, [currentUserId]);
 
   const getDisplayName = (user: Profile) => {
-    if (!user.full_name) return 'Anonymous';
+    if (!user.full_name) return user.email?.split('@')[0] || 'Anonymous';
     const names = user.full_name.split(' ');
     return names.length > 1 
       ? `${names[0]} ${names[names.length - 1][0]}.`
@@ -72,16 +74,16 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
 
   if (loading) {
     return (
-      <div className="p-4 text-center text-gray-500">
-        Loading users...
-      </div>
-    );
-  }
-
-  if (users.length === 0) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        No other users found
+      <div className="space-y-3 p-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[150px]" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -91,12 +93,12 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
       {users.map((user) => (
         <div
           key={user.id}
-          className={`p-2 flex items-center gap-2 hover:bg-gray-50 cursor-pointer border-b ${
+          className={`p-3 flex items-center gap-3 hover:bg-gray-50 cursor-pointer border-b transition-colors ${
             selectedUser?.id === user.id ? "bg-gray-100" : ""
           }`}
           onClick={() => onUserSelect(user)}
         >
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-10 w-10">
             <AvatarImage src={user.avatar_url || undefined} />
             <AvatarFallback>{user.full_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
           </Avatar>
