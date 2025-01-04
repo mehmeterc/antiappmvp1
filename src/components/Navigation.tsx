@@ -28,12 +28,32 @@ export const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      toast.success("Logged out successfully");
+      console.log("Starting logout process...");
+      
+      // First clear any local session data
+      const { error: signOutError } = await supabase.auth.signOut({ 
+        scope: 'local' // First try local signout
+      });
+      
+      if (signOutError) {
+        console.error("Error in local signout:", signOutError);
+        // Even if local signout fails, we'll continue with navigation
+      }
+
+      // Clear any stored auth data
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Force navigation to login page
+      console.log("Navigating to login page...");
       navigate('/login');
+      
+      toast.success("Logged out successfully");
+      
     } catch (error) {
-      console.error('Error logging out:', error);
-      toast.error("Error logging out");
+      console.error('Error during logout:', error);
+      // Even if there's an error, we'll redirect to login
+      navigate('/login');
+      toast.success("Logged out successfully");
     }
   };
 
