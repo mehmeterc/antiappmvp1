@@ -20,18 +20,23 @@ const Messages = () => {
     if (!session?.user?.id) return;
 
     const fetchCurrentUserProfile = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) {
-        console.error("Error fetching current user profile:", error);
-        return;
+        if (error) {
+          console.error("Error fetching current user profile:", error);
+          toast.error("Error loading your profile");
+          return;
+        }
+
+        setSenderProfile(data);
+      } catch (error) {
+        console.error("Error in fetchCurrentUserProfile:", error);
       }
-
-      setSenderProfile(data);
     };
 
     fetchCurrentUserProfile();
@@ -41,19 +46,24 @@ const Messages = () => {
     if (!session?.user?.id || !selectedUser) return;
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${session.user.id})`)
-        .order('created_at', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${session.user.id})`)
+          .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Error fetching messages:", error);
-        return;
+        if (error) {
+          console.error("Error fetching messages:", error);
+          toast.error("Error loading messages");
+          return;
+        }
+
+        setMessages(data);
+        console.log("Messages fetched:", data);
+      } catch (error) {
+        console.error("Error in fetchMessages:", error);
       }
-
-      setMessages(data);
-      console.log("Messages fetched:", data);
     };
 
     fetchMessages();
@@ -83,20 +93,39 @@ const Messages = () => {
   }, [selectedUser, session?.user?.id]);
 
   const handleSendMessage = async (content: string) => {
-    if (!session?.user?.id || !selectedUser) return;
+    if (!session?.user?.id || !selectedUser) {
+      console.error("Missing user session or selected user");
+      return;
+    }
 
-    const { error } = await supabase
-      .from('messages')
-      .insert({
+    try {
+      console.log("Sending message:", {
         sender_id: session.user.id,
         receiver_id: selectedUser.id,
-        content,
+        content
       });
 
-    if (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message");
-      return;
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: session.user.id,
+          receiver_id: selectedUser.id,
+          content,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error sending message:", error);
+        throw error;
+      }
+
+      console.log("Message sent successfully:", data);
+      setMessages(prev => [...prev, data]);
+      toast.success("Message sent!");
+    } catch (error) {
+      console.error("Error in handleSendMessage:", error);
+      throw error;
     }
   };
 
