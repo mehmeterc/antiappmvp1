@@ -60,15 +60,8 @@ const Login = () => {
         case 'TOKEN_REFRESHED':
           console.log('Session token refreshed');
           break;
-        case 'USER_DELETED':
-          console.log('User account deleted');
-          toast.error('Account deleted');
-          break;
         default:
-          if (event.includes('ERROR')) {
-            console.error('Auth error:', event);
-            toast.error('Authentication error occurred');
-          }
+          console.log('Unhandled auth event:', event);
       }
     });
 
