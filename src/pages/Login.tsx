@@ -73,7 +73,6 @@ const Login = () => {
                 }
               }
             },
-            // Add some style improvements
             style: {
               button: {
                 borderRadius: '6px',
@@ -90,9 +89,19 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={redirectUrl}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast.error(error.message || 'An error occurred during authentication');
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Password',
+                email_input_placeholder: 'Your email',
+                password_input_placeholder: 'Your password',
+                button_label: 'Sign in',
+                loading_button_label: 'Signing in ...',
+                social_provider_text: 'Sign in with {{provider}}',
+                link_text: 'Already have an account? Sign in',
+              },
+            },
           }}
         />
       </div>
