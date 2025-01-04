@@ -37,7 +37,8 @@ const Login = () => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
+      console.log('Auth state changed:', event);
+      console.log('Session details:', session);
       
       switch (event) {
         case 'SIGNED_IN':
@@ -59,6 +60,13 @@ const Login = () => {
           break;
         case 'TOKEN_REFRESHED':
           console.log('Session token refreshed');
+          break;
+        case 'USER_DELETED':
+          console.log('User account deleted');
+          toast.info('Account deleted successfully');
+          break;
+        case 'INITIAL_SESSION':
+          console.log('Initial session loaded');
           break;
         default:
           console.log('Unhandled auth event:', event);
@@ -102,7 +110,11 @@ const Login = () => {
             },
           }}
           providers={[]}
-          redirectTo={`${window.location.origin}/`}
+          redirectTo={window.location.origin}
+          onError={(error) => {
+            console.error('Auth error:', error);
+            toast.error(error.message || 'An error occurred during authentication');
+          }}
           localization={{
             variables: {
               sign_in: {
