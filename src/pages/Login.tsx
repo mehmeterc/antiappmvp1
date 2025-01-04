@@ -1,62 +1,42 @@
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Layout } from '@/components/Layout';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { session, isLoading } = useSessionContext();
 
   useEffect(() => {
-    console.log('Login component mounted');
+    console.log("Session state changed:", session);
     
-    // Check if user is already logged in
-    const checkUser = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session check error:', sessionError);
-          toast.error('Error checking login status');
-          return;
-        }
-        
-        if (session) {
-          console.log('User already logged in, redirecting to home');
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('Unexpected error during session check:', error);
-        toast.error('An unexpected error occurred');
-      }
-    };
+    if (session) {
+      console.log("User is authenticated, redirecting to home");
+      navigate("/");
+    }
+  }, [session, navigate]);
 
-    checkUser();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event);
-      console.log('Session details:', session);
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
       
       switch (event) {
         case 'SIGNED_IN':
-          if (session) {
-            console.log('Sign in successful:', session);
-            toast.success('Successfully logged in!');
-            navigate('/');
-          }
+          console.log('User signed in:', session?.user?.email);
+          toast.success('Successfully signed in!');
           break;
         case 'SIGNED_OUT':
-          console.log('Sign out successful');
-          toast.success('Successfully logged out!');
+          console.log('User signed out');
+          toast.info('Signed out successfully');
           break;
         case 'PASSWORD_RECOVERY':
-          toast.info('Please check your email for password reset instructions');
-          break;
-        case 'USER_UPDATED':
-          console.log('User profile updated');
+          console.log('Password recovery requested');
+          toast.info('Password recovery email sent');
           break;
         case 'TOKEN_REFRESHED':
           console.log('Session token refreshed');
@@ -67,15 +47,28 @@ const Login = () => {
     });
 
     return () => {
-      console.log('Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
-    <Layout>
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg mt-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome to AntiApp</h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">Welcome to AntiApp</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to find your perfect workspace
+          </p>
+        </div>
+
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -83,54 +76,29 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#000000',
-                  brandAccent: '#333333',
-                }
-              }
-            },
-            style: {
-              button: {
-                borderRadius: '6px',
-                height: '40px',
-              },
-              input: {
-                borderRadius: '6px',
-                height: '40px',
-              },
-              anchor: {
-                color: '#000000',
+                  brand: '#2563eb',
+                  brandAccent: '#1d4ed8',
+                },
               },
             },
           }}
           providers={[]}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/`}
           localization={{
             variables: {
               sign_in: {
-                email_label: 'Email',
+                email_label: 'Email address',
                 password_label: 'Password',
-                email_input_placeholder: 'Your email',
-                password_input_placeholder: 'Your password',
-                button_label: 'Sign in',
-                loading_button_label: 'Signing in ...',
-                social_provider_text: 'Sign in with {{provider}}',
-                link_text: 'Already have an account? Sign in',
               },
               sign_up: {
-                email_label: 'Email',
-                password_label: 'Create a Password',
-                email_input_placeholder: 'Your email',
-                password_input_placeholder: 'Create a password',
-                button_label: 'Sign up',
-                loading_button_label: 'Signing up ...',
-                social_provider_text: 'Sign up with {{provider}}',
-                link_text: "Don't have an account? Sign up",
+                email_label: 'Email address',
+                password_label: 'Create a password',
               },
             },
           }}
         />
       </div>
-    </Layout>
+    </div>
   );
 };
 
