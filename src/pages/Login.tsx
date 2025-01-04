@@ -1,74 +1,44 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { useSessionContext } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { session, isLoading } = useSessionContext();
 
   useEffect(() => {
-    console.log("Session state changed:", session);
+    console.log("Setting up auth state change listener");
     
-    if (session) {
-      console.log("User is authenticated, redirecting to home");
-      navigate("/");
-    }
-  }, [session, navigate]);
-
-  useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event);
+      console.log("Auth state changed:", event, session?.user?.id);
       
-      switch (event) {
-        case 'SIGNED_IN':
-          console.log('User signed in:', session?.user?.email);
-          toast.success('Successfully signed in!');
-          break;
-        case 'SIGNED_OUT':
-          console.log('User signed out');
-          toast.info('Signed out successfully');
-          break;
-        case 'PASSWORD_RECOVERY':
-          console.log('Password recovery requested');
-          toast.info('Password recovery email sent');
-          break;
-        case 'TOKEN_REFRESHED':
-          console.log('Session token refreshed');
-          break;
-        default:
-          console.log('Unhandled auth event:', event);
+      if (event === "SIGNED_IN") {
+        console.log("User signed in, redirecting to home");
+        toast.success("Successfully signed in!");
+        navigate("/");
+      } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
+        toast.info("Signed out successfully");
+        navigate("/login");
+      } else if (event === "PASSWORD_RECOVERY") {
+        toast.info("Please check your email to reset your password");
       }
     });
 
     return () => {
+      console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Welcome to AntiApp</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to find your perfect workspace
-          </p>
-        </div>
-
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -76,26 +46,15 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#2563eb',
-                  brandAccent: '#1d4ed8',
+                  brand: '#0D9F6C',
+                  brandAccent: '#0B8A5C',
                 },
               },
             },
           }}
-          providers={[]}
-          redirectTo={`${window.location.origin}/`}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Email address',
-                password_label: 'Password',
-              },
-              sign_up: {
-                email_label: 'Email address',
-                password_label: 'Create a password',
-              },
-            },
-          }}
+          providers={["google"]}
+          redirectTo={window.location.origin}
+          onlyThirdPartyProviders={false}
         />
       </div>
     </div>

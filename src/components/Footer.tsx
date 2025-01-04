@@ -12,7 +12,7 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-md py-2 z-40">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-md py-2 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-4 gap-4">
           {footerItems.map((item) => (

@@ -3,8 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { createClient } from '@supabase/supabase-js'
-import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { SessionContextProvider, useSession } from '@supabase/auth-helpers-react';
 import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
 import Index from "./pages/Index";
@@ -19,7 +18,14 @@ import CafeDetails from "./pages/CafeDetails";
 import CheckInStatus from "./pages/CheckInStatus";
 import { supabase } from "./integrations/supabase/client";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   return (
@@ -76,11 +82,12 @@ const App = () => {
   );
 };
 
-// Protected Route component
+// Protected Route component with improved session handling
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const session = supabase.auth.getSession();
+  const session = useSession();
   
   if (!session) {
+    console.log("No session found, redirecting to login");
     return <Navigate to="/login" replace />;
   }
   
