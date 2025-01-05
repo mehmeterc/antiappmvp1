@@ -26,8 +26,22 @@ const Login = () => {
         navigate("/login");
       } else if (event === "PASSWORD_RECOVERY") {
         toast.info("Please check your email to reset your password");
+      } else if (event === "USER_UPDATED") {
+        console.log("User updated:", session?.user);
+        toast.success("Profile updated successfully");
       }
     });
+
+    // Check current session on mount
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log("Active session found, redirecting to home");
+        navigate("/");
+      }
+    };
+    
+    checkSession();
 
     return () => {
       console.log("Cleaning up auth state change listener");
@@ -53,7 +67,7 @@ const Login = () => {
             },
           }}
           providers={["google"]}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}`}
           onlyThirdPartyProviders={false}
         />
       </div>
