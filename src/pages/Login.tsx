@@ -13,11 +13,11 @@ const Login = () => {
     
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.id);
       
       if (event === "SIGNED_IN") {
-        console.log("User signed in, redirecting to home");
+        console.log("User signed in successfully:", session?.user);
         toast.success("Successfully signed in!");
         navigate("/");
       } else if (event === "SIGNED_OUT") {
@@ -29,12 +29,26 @@ const Login = () => {
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user);
         toast.success("Profile updated successfully");
+      } else if (event === "USER_DELETED") {
+        console.log("User deleted");
+        toast.info("Account deleted successfully");
+        navigate("/login");
+      } else {
+        console.log("Other auth event:", event);
       }
     });
 
     // Check current session on mount
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log("Checking current session:", session, error);
+      
+      if (error) {
+        console.error("Session check error:", error);
+        toast.error("Error checking session");
+        return;
+      }
+      
       if (session) {
         console.log("Active session found, redirecting to home");
         navigate("/");
@@ -52,7 +66,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Welcome to AntiApp</h1>
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -65,9 +79,14 @@ const Login = () => {
                 },
               },
             },
+            style: {
+              button: { width: '100%' },
+              container: { width: '100%' },
+              anchor: { color: '#0D9F6C' },
+            },
           }}
-          providers={["google"]}
-          redirectTo={`${window.location.origin}`}
+          providers={[]}
+          redirectTo={window.location.origin}
           onlyThirdPartyProviders={false}
         />
       </div>
