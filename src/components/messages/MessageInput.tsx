@@ -15,18 +15,19 @@ export const MessageInput = ({ onSendMessage, disabled }: MessageInputProps) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !isSending) {
-      try {
-        setIsSending(true);
-        await onSendMessage(message);
-        setMessage("");
-        console.log("Message sent successfully");
-      } catch (error) {
-        console.error("Error sending message:", error);
-        toast.error("Failed to send message. Please try again.");
-      } finally {
-        setIsSending(false);
-      }
+    if (!message.trim() || isSending) return;
+
+    try {
+      setIsSending(true);
+      console.log("Attempting to send message:", message);
+      await onSendMessage(message);
+      setMessage("");
+      console.log("Message sent successfully");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Unable to send your message. Please check your connection and try again.");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -44,6 +45,7 @@ export const MessageInput = ({ onSendMessage, disabled }: MessageInputProps) => 
           type="submit" 
           size="icon" 
           disabled={disabled || isSending || !message.trim()}
+          className="shrink-0"
         >
           <Send className="h-4 w-4" />
         </Button>

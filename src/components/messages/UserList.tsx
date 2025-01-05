@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface UserListProps {
   currentUserId: string;
@@ -29,6 +30,7 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
         
         if (error) {
           console.error("Error fetching users:", error);
+          toast.error("Unable to load users. Please refresh the page.");
           return;
         }
         
@@ -36,6 +38,7 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
         setUsers(data || []);
       } catch (error) {
         console.error("Error in fetchUsers:", error);
+        toast.error("An error occurred while loading users");
       } finally {
         setLoading(false);
       }
@@ -84,6 +87,14 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No other users found
       </div>
     );
   }

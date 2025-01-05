@@ -15,10 +15,12 @@ const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [senderProfile, setSenderProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!session?.user?.id) {
       console.log("No session found");
+      setIsLoading(false);
       return;
     }
 
@@ -41,6 +43,8 @@ const Messages = () => {
         setSenderProfile(data);
       } catch (error) {
         console.error("Error in fetchCurrentUserProfile:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -55,6 +59,7 @@ const Messages = () => {
 
     const fetchMessages = async () => {
       try {
+        setIsLoading(true);
         console.log("Fetching messages between", session.user.id, "and", selectedUser.id);
         const { data, error } = await supabase
           .from('messages')
@@ -72,6 +77,8 @@ const Messages = () => {
         setMessages(data || []);
       } catch (error) {
         console.error("Error in fetchMessages:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -104,6 +111,7 @@ const Messages = () => {
   const handleSendMessage = async (content: string) => {
     if (!session?.user?.id || !selectedUser) {
       console.error("Missing user session or selected user");
+      toast.error("Please log in to send messages");
       return;
     }
 
@@ -131,10 +139,9 @@ const Messages = () => {
 
       console.log("Message sent successfully:", data);
       setMessages(prev => [...prev, data]);
-      toast.success("Message sent!");
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
-      throw error;
+      throw new Error("Failed to send message. Please try again.");
     }
   };
 
@@ -179,11 +186,17 @@ const Messages = () => {
                 </Button>
               </div>
 
-              <MessageList 
-                messages={messages}
-                senderProfile={senderProfile}
-                receiverProfile={selectedUser}
-              />
+              {isLoading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-500">Loading messages...</p>
+                </div>
+              ) : (
+                <MessageList 
+                  messages={messages}
+                  senderProfile={senderProfile}
+                  receiverProfile={selectedUser}
+                />
+              )}
 
               <MessageInput onSendMessage={handleSendMessage} />
             </>
