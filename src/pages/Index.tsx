@@ -4,15 +4,78 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const Index = () => {
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [cafesWithDistance, setCafesWithDistance] = useState(BERLIN_CAFES);
+
+  useEffect(() => {
+    // Request user's location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Got user location:", position.coords);
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          toast.error("Could not get your location. Distances will not be shown.");
+        }
+      );
+    } else {
+      console.log("Geolocation not supported");
+      toast.error("Your browser doesn't support geolocation. Distances will not be shown.");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userLocation) {
+      // Calculate distances for all cafes
+      const cafesWithDistances = BERLIN_CAFES.map(cafe => ({
+        ...cafe,
+        distance: calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          cafe.coordinates.lat,
+          cafe.coordinates.lng
+        )
+      }));
+
+      // Sort by distance
+      cafesWithDistances.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+      setCafesWithDistance(cafesWithDistances);
+    }
+  }, [userLocation]);
+
+  // Haversine formula to calculate distance between two points
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round((R * c) * 10) / 10; // Round to 1 decimal place
+  };
+
+  const toRad = (value: number): number => {
+    return value * Math.PI / 180;
+  };
+
   // Get top rated cafes for highlights
-  const highlightedCafes = BERLIN_CAFES
+  const highlightedCafes = cafesWithDistance
     .filter(cafe => cafe.rating >= 4.7)
     .slice(0, 4);
 
   // Get all cafes for the main list
-  const allCafes = BERLIN_CAFES.slice(0, 8);
+  const allCafes = cafesWithDistance.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,10 +119,17 @@ const Index = () => {
                   </div>
                   <div className="p-3">
                     <h3 className="font-medium text-sm truncate">{cafe.title}</h3>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3" />
-                      {cafe.address.split(',')[0]}
-                    </p>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {cafe.address.split(',')[0]}
+                      </p>
+                      {cafe.distance && (
+                        <p className="text-xs text-muted-foreground">
+                          {cafe.distance} km away
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </Card>
               </Link>
@@ -93,10 +163,17 @@ const Index = () => {
                   </div>
                   <div className="p-4">
                     <h3 className="font-medium text-lg">{cafe.title}</h3>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
-                      <MapPin className="w-4 h-4" />
-                      {cafe.address}
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {cafe.address}
+                      </p>
+                      {cafe.distance && (
+                        <p className="text-sm text-muted-foreground">
+                          {cafe.distance} km away
+                        </p>
+                      )}
+                    </div>
                     <div className="flex gap-2 mt-3">
                       {cafe.amenities.slice(0, 3).map((amenity) => (
                         <Badge key={amenity} variant="outline">
