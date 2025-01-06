@@ -58,7 +58,7 @@ export const searchCafes = (
   
   // First, filter by price range and amenities
   let filteredCafes = cafes.filter(cafe => {
-    const price = parseFloat(cafe.price.replace('€', ''));
+    const price = parseFloat(cafe.price);
     const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
     const matchesFilters = selectedFilters.length === 0 || 
       selectedFilters.every(filter => cafe.amenities.includes(filter));

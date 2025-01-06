@@ -62,6 +62,7 @@ export const FilterOptions = ({
           value={priceRange}
           onValueChange={onPriceRangeChange}
           className="w-full"
+          minStepsBetweenThumbs={1}
         />
         <div className="flex justify-between text-sm text-gray-500">
           <span>{priceRange[0]}€/h</span>
