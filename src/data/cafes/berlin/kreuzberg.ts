@@ -11,7 +11,8 @@ export const CAFES_KREUZBERG = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "cake"],
     tags: ["specialty coffee", "cake", "roastery"],
-    coordinates: { lat: 52.497377, lng: 13.428041 }
+    coordinates: { lat: 52.497377, lng: 13.428041 },
+    reviews: []
   },
   {
     id: "6",
@@ -25,6 +26,7 @@ export const CAFES_KREUZBERG = [
     priceRange: "budget",
     amenities: ["coffee", "outdoor"],
     tags: ["specialty coffee", "intimate", "takeaway"],
-    coordinates: { lat: 52.497730, lng: 13.422150 }
+    coordinates: { lat: 52.497730, lng: 13.422150 },
+    reviews: []
   }
 ];
