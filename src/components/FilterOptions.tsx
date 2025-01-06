@@ -56,8 +56,8 @@ export const FilterOptions = ({
           Price Range (€/hour)
         </label>
         <Slider
-          defaultValue={[0, 30]}
-          max={30}
+          defaultValue={[0, 12]}
+          max={12}
           step={1}
           value={priceRange}
           onValueChange={onPriceRangeChange}
@@ -72,7 +72,7 @@ export const FilterOptions = ({
       {(['amenities', 'atmosphere', 'services'] as const).map((category) => (
         <div key={category} className="space-y-2">
           <h3 className="font-medium capitalize">{category}</h3>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {FILTER_OPTIONS.filter(option => option.category === category).map(({ id, label, icon }) => (
               <div key={id} className="flex items-center space-x-2">
                 <Checkbox 

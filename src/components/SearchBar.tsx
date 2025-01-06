@@ -15,12 +15,11 @@ export const SearchBar = () => {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 30]);
+  const [priceRange, setPriceRange] = useState([0, 12]);
   const [suggestions, setSuggestions] = useState<Cafe[]>([]);
   
   const { aiRecommendations = [], isLoading } = useAIRecommendations(searchTerm);
 
-  // Handle search term changes
   useEffect(() => {
     console.log('Search term changed:', searchTerm);
     if (searchTerm.length > 0) {

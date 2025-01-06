@@ -7,13 +7,13 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Cafe } from "@/types/cafe";
+import { calculateDistance } from "@/utils/searchUtils";
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>(BERLIN_CAFES);
 
   useEffect(() => {
-    // Request user's location
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -36,7 +36,6 @@ const Index = () => {
 
   useEffect(() => {
     if (userLocation) {
-      // Calculate distances for all cafes
       const cafesWithDistances = BERLIN_CAFES.map(cafe => ({
         ...cafe,
         distance: calculateDistance(
@@ -47,28 +46,10 @@ const Index = () => {
         )
       }));
 
-      // Sort by distance
       cafesWithDistances.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       setCafesWithDistance(cafesWithDistances);
     }
   }, [userLocation]);
-
-  // Haversine formula to calculate distance between two points
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round((R * c) * 10) / 10; // Round to 1 decimal place
-  };
-
-  const toRad = (value: number): number => {
-    return value * Math.PI / 180;
-  };
 
   // Get top rated cafes for highlights
   const highlightedCafes = cafesWithDistance
