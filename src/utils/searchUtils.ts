@@ -3,13 +3,15 @@ import { Cafe } from '@/types/cafe';
 
 const fuseOptions = {
   keys: ['title', 'description', 'address', 'tags', 'amenities'],
-  threshold: 0.3, // More strict matching
-  distance: 100, // Allow for more distance between matches
+  threshold: 0.3,
+  distance: 100,
   includeScore: true,
   useExtendedSearch: true,
   ignoreLocation: true,
   shouldSort: true,
 };
+
+const fuse = new Fuse([], fuseOptions);
 
 export const normalizeText = (text: string): string => {
   return text
@@ -33,18 +35,15 @@ export const searchCafes = (
     aiRecommendationsCount: aiRecommendations.length
   });
   
-  // First, filter by price range
+  // First, filter by price range and amenities
   let filteredCafes = cafes.filter(cafe => {
     const price = parseInt(cafe.price);
-    return price >= priceRange[0] && price <= priceRange[1];
+    const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+    const matchesFilters = selectedFilters.length === 0 || 
+      selectedFilters.every(filter => cafe.amenities.includes(filter));
+    
+    return matchesPrice && matchesFilters;
   });
-
-  // Then apply amenity filters
-  if (selectedFilters.length > 0) {
-    filteredCafes = filteredCafes.filter(cafe =>
-      selectedFilters.every(filter => cafe.amenities.includes(filter))
-    );
-  }
 
   // If no search term, return filtered results
   if (!searchTerm.trim()) {
@@ -52,29 +51,16 @@ export const searchCafes = (
     return filteredCafes;
   }
 
-  const normalizedSearchTerm = normalizeText(searchTerm);
-  
-  // Try exact matches first
-  let results = filteredCafes.filter(cafe => 
-    normalizeText(cafe.title).includes(normalizedSearchTerm) ||
-    normalizeText(cafe.description).includes(normalizedSearchTerm) ||
-    cafe.tags.some(tag => normalizeText(tag).includes(normalizedSearchTerm)) ||
-    cafe.amenities.some(amenity => normalizeText(amenity).includes(normalizedSearchTerm))
-  );
+  // Update Fuse instance with filtered cafes
+  fuse.setCollection(filteredCafes);
 
-  // If no exact matches, use fuzzy search
-  if (results.length === 0) {
-    console.log('No exact matches, using fuzzy search');
-    const fuse = new Fuse(filteredCafes, fuseOptions);
-    const fuseResults = fuse.search(normalizedSearchTerm);
-    
-    // Only include results with a good match score
-    results = fuseResults
-      .filter(result => result.score && result.score < 0.6)
-      .map(result => result.item);
-  }
+  // Perform fuzzy search
+  const searchResults = fuse.search(searchTerm);
+  const results = searchResults
+    .filter(result => result.score && result.score < 0.6)
+    .map(result => result.item);
 
-  // Include AI recommendations if they exist
+  // Include AI recommendations
   const recommendedCafes = filteredCafes.filter(cafe => 
     aiRecommendations.includes(cafe.id) && 
     !results.find(r => r.id === cafe.id)

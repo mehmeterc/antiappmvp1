@@ -53,6 +53,57 @@ export type Database = {
           },
         ]
       }
+      cafes: {
+        Row: {
+          address: string
+          amenities: string[]
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          lat: number
+          lng: number
+          occupancy: string
+          price: string
+          price_range: string
+          rating: number
+          tags: string[]
+          title: string
+        }
+        Insert: {
+          address: string
+          amenities: string[]
+          created_at?: string
+          description: string
+          id: string
+          image_url: string
+          lat: number
+          lng: number
+          occupancy: string
+          price: string
+          price_range: string
+          rating: number
+          tags: string[]
+          title: string
+        }
+        Update: {
+          address?: string
+          amenities?: string[]
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          lat?: number
+          lng?: number
+          occupancy?: string
+          price?: string
+          price_range?: string
+          rating?: number
+          tags?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           cafe_id: string | null
