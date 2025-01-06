@@ -11,7 +11,8 @@ export const CAFES_PRENZLAUER_BERG = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "community"],
     tags: ["coffee", "roastery", "specialty"],
-    coordinates: { lat: 52.541512, lng: 13.409894 }
+    coordinates: { lat: 52.541512, lng: 13.409894 },
+    reviews: []
   },
   {
     id: "4",
@@ -25,6 +26,7 @@ export const CAFES_PRENZLAUER_BERG = [
     priceRange: "budget",
     amenities: ["wifi", "coffee", "food", "outdoor"],
     tags: ["cozy", "cakes", "work-friendly"],
-    coordinates: { lat: 52.532562, lng: 13.419894 }
+    coordinates: { lat: 52.532562, lng: 13.419894 },
+    reviews: []
   }
 ];

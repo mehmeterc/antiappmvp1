@@ -11,7 +11,8 @@ export const CAFES_MITTE = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "quiet", "focus"],
     tags: ["specialty coffee", "minimalist", "roastery"],
-    coordinates: { lat: 52.527977, lng: 13.399520 }
+    coordinates: { lat: 52.527977, lng: 13.399520 },
+    reviews: []
   },
   {
     id: "2",
@@ -25,6 +26,7 @@ export const CAFES_MITTE = [
     priceRange: "moderate",
     amenities: ["wifi", "power", "coffee", "food", "outdoor"],
     tags: ["brunch", "courtyard", "specialty coffee"],
-    coordinates: { lat: 52.524556, lng: 13.409364 }
+    coordinates: { lat: 52.524556, lng: 13.409364 },
+    reviews: []
   }
 ];
