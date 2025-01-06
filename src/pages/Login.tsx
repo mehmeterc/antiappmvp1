@@ -29,10 +29,6 @@ const Login = () => {
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user);
         toast.success("Profile updated successfully");
-      } else if (event === "USER_DELETED") {
-        console.log("User deleted");
-        toast.info("Account deleted successfully");
-        navigate("/login");
       } else {
         console.log("Other auth event:", event);
       }
@@ -86,7 +82,7 @@ const Login = () => {
             },
           }}
           providers={[]}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/`}
           onlyThirdPartyProviders={false}
         />
       </div>
