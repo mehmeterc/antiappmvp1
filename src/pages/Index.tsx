@@ -6,10 +6,11 @@ import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Cafe } from "@/types/cafe";
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [cafesWithDistance, setCafesWithDistance] = useState(BERLIN_CAFES);
+  const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>(BERLIN_CAFES);
 
   useEffect(() => {
     // Request user's location

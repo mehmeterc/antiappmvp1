@@ -24,4 +24,5 @@ export interface Cafe {
     lng: number;
   };
   reviews?: Review[];  // Made optional with ?
+  distance?: number;   // Added distance property as optional
 }
