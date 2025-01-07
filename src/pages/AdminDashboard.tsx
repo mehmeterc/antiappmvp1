@@ -78,7 +78,7 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles!inner (verification_status),
+          profiles (verification_status),
           created_at
         `);
 
@@ -89,23 +89,13 @@ const AdminDashboard = () => {
 
       if (data) {
         console.log('Raw merchant data:', data);
-        const formattedMerchants = data
-          .filter((merchant): merchant is (typeof data)[0] => {
-            if (!merchant.profiles || typeof merchant.profiles !== 'object') {
-              console.error('Invalid profiles data:', merchant.profiles);
-              return false;
-            }
-            return true;
-          })
-          .map(merchant => ({
-            id: merchant.id,
-            business_name: merchant.business_name,
-            contact_email: merchant.contact_email,
-            profiles: {
-              verification_status: merchant.profiles.verification_status
-            },
-            created_at: merchant.created_at,
-          }));
+        const formattedMerchants = data.map(merchant => ({
+          id: merchant.id,
+          business_name: merchant.business_name,
+          contact_email: merchant.contact_email,
+          profiles: merchant.profiles as { verification_status: 'pending' | 'approved' | 'rejected' },
+          created_at: merchant.created_at,
+        }));
 
         console.log('Formatted merchants:', formattedMerchants);
         setMerchants(formattedMerchants);
