@@ -78,7 +78,7 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles (verification_status),
+          profiles!inner (verification_status),
           created_at
         `);
 
@@ -93,7 +93,9 @@ const AdminDashboard = () => {
           id: merchant.id,
           business_name: merchant.business_name,
           contact_email: merchant.contact_email,
-          profiles: merchant.profiles as { verification_status: 'pending' | 'approved' | 'rejected' },
+          profiles: {
+            verification_status: (merchant.profiles as { verification_status: 'pending' | 'approved' | 'rejected' }).verification_status
+          },
           created_at: merchant.created_at,
         }));
 
