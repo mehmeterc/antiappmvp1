@@ -107,8 +107,8 @@ export type Database = {
       merchant_profiles: {
         Row: {
           business_description: string | null
-          business_name: string | null
-          contact_email: string | null
+          business_name: string
+          contact_email: string
           contact_phone: string | null
           created_at: string | null
           id: string
@@ -117,8 +117,8 @@ export type Database = {
         }
         Insert: {
           business_description?: string | null
-          business_name?: string | null
-          contact_email?: string | null
+          business_name: string
+          contact_email: string
           contact_phone?: string | null
           created_at?: string | null
           id: string
@@ -127,8 +127,8 @@ export type Database = {
         }
         Update: {
           business_description?: string | null
-          business_name?: string | null
-          contact_email?: string | null
+          business_name?: string
+          contact_email?: string
           contact_phone?: string | null
           created_at?: string | null
           id?: string
