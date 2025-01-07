@@ -43,18 +43,23 @@ const Login = () => {
 
     // Check current session on mount
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      console.log("Checking current session:", session, error);
-      
-      if (error) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Checking current session:", session, error);
+        
+        if (error) {
+          console.error("Session check error:", error);
+          toast.error("Error checking session");
+          return;
+        }
+        
+        if (session) {
+          console.log("Active session found, redirecting to home");
+          navigate("/");
+        }
+      } catch (error) {
         console.error("Session check error:", error);
         toast.error("Error checking session");
-        return;
-      }
-      
-      if (session) {
-        console.log("Active session found, redirecting to home");
-        navigate("/");
       }
     };
     
