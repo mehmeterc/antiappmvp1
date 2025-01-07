@@ -19,6 +19,7 @@ import CafeDetails from "./pages/CafeDetails";
 import CheckInStatus from "./pages/CheckInStatus";
 import MerchantRegistration from "./pages/MerchantRegistration";
 import MerchantProfile from "./pages/MerchantProfile";
+import AdminDashboard from "./pages/AdminDashboard";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient({
@@ -84,6 +85,11 @@ const App = () => {
                   <MerchantRoute>
                     <MerchantProfile />
                   </MerchantRoute>
+                } />
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
                 } />
               </Routes>
               <Footer />
@@ -152,6 +158,57 @@ const MerchantRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isMerchant) {
     console.log("User is not a merchant, redirecting to home");
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Admin Route component
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const session = useSession();
+  const supabase = useSupabaseClient();
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('account_type')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) throw error;
+
+        setIsAdmin(data?.account_type === 'admin');
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session, supabase]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    console.log("No session found, redirecting to login");
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    console.log("User is not an admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
 

@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
-import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star } from "lucide-react";
+import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star, Settings } from "lucide-react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   Sheet,
@@ -11,11 +11,31 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 export const Navigation = () => {
   const navigate = useNavigate();
   const session = useSession();
   const supabase = useSupabaseClient();
+  const [accountType, setAccountType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('account_type')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!error && data) {
+          setAccountType(data.account_type);
+        }
+      }
+    };
+
+    fetchAccountType();
+  }, [session, supabase]);
 
   const menuItems = [
     { label: "Profile", icon: <User className="h-4 w-4" />, path: "/profile" },
@@ -23,25 +43,39 @@ export const Navigation = () => {
     { label: "History", icon: <History className="h-4 w-4" />, path: "/history" },
     { label: "Messages", icon: <MessageSquare className="h-4 w-4" />, path: "/messages" },
     { label: "Reviews", icon: <Star className="h-4 w-4" />, path: "/reviews" },
-    { label: "About", icon: <Info className="h-4 w-4" />, path: "/about" },
   ];
+
+  if (accountType === 'merchant') {
+    menuItems.push({ 
+      label: "Merchant Profile", 
+      icon: <Settings className="h-4 w-4" />, 
+      path: "/merchant/profile" 
+    });
+  }
+
+  if (accountType === 'admin') {
+    menuItems.push({ 
+      label: "Admin Dashboard", 
+      icon: <Settings className="h-4 w-4" />, 
+      path: "/admin" 
+    });
+  }
+
+  menuItems.push({ 
+    label: "About", 
+    icon: <Info className="h-4 w-4" />, 
+    path: "/about" 
+  });
 
   const handleLogout = async () => {
     try {
-      // Clear any stored auth data first
       localStorage.clear();
       sessionStorage.clear();
-      
-      // Simple signout without scope
       await supabase.auth.signOut();
-      
-      // Navigate to login page
       navigate('/login');
       toast.success("Logged out successfully");
-      
     } catch (error) {
       console.error('Error during logout:', error);
-      // Even if there's an error, clear storage and redirect
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
