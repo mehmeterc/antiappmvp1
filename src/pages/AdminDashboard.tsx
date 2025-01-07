@@ -1,19 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { toast } from "sonner";
+import { MerchantList } from "@/components/admin/MerchantList";
+import { AdminLogs } from "@/components/admin/AdminLogs";
 
 interface MerchantProfile {
   id: string;
@@ -78,7 +69,7 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles!inner (verification_status),
+          profiles (verification_status),
           created_at
         `);
 
@@ -94,7 +85,7 @@ const AdminDashboard = () => {
           business_name: merchant.business_name,
           contact_email: merchant.contact_email,
           profiles: {
-            verification_status: merchant.profiles.verification_status as 'pending' | 'approved' | 'rejected'
+            verification_status: merchant.profiles.verification_status
           },
           created_at: merchant.created_at,
         }));
@@ -143,20 +134,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      pending: "bg-yellow-100 text-yellow-800",
-      approved: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800",
-    };
-
-    return (
-      <Badge className={statusStyles[status as keyof typeof statusStyles]}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -172,77 +149,14 @@ const AdminDashboard = () => {
         </TabsList>
 
         <TabsContent value="merchants">
-          <div className="bg-white rounded-lg shadow">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Business Name</TableHead>
-                  <TableHead>Contact Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {merchants.map((merchant) => (
-                  <TableRow key={merchant.id}>
-                    <TableCell>{merchant.business_name}</TableCell>
-                    <TableCell>{merchant.contact_email}</TableCell>
-                    <TableCell>{getStatusBadge(merchant.profiles.verification_status)}</TableCell>
-                    <TableCell>
-                      {format(new Date(merchant.created_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      {merchant.profiles.verification_status === 'pending' && (
-                        <div className="space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => updateMerchantStatus(merchant.id, 'approved')}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => updateMerchantStatus(merchant.id, 'rejected')}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <MerchantList 
+            merchants={merchants} 
+            onUpdateStatus={updateMerchantStatus} 
+          />
         </TabsContent>
 
         <TabsContent value="logs">
-          <div className="bg-white rounded-lg shadow">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Table</TableHead>
-                  <TableHead>Target ID</TableHead>
-                  <TableHead>Timestamp</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {adminLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="capitalize">{log.action.toLowerCase()}</TableCell>
-                    <TableCell>{log.table_name}</TableCell>
-                    <TableCell className="font-mono text-sm">{log.target_id}</TableCell>
-                    <TableCell>
-                      {format(new Date(log.timestamp), 'MMM d, yyyy HH:mm:ss')}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <AdminLogs logs={adminLogs} />
         </TabsContent>
       </Tabs>
     </div>
