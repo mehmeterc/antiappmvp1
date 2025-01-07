@@ -69,7 +69,7 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles (verification_status),
+          profiles!inner (verification_status),
           created_at
         `);
 
