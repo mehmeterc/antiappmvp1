@@ -69,9 +69,10 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles!inner (verification_status),
+          profiles (verification_status),
           created_at
-        `);
+        `)
+        .returns<(Omit<MerchantProfile, 'profiles'> & { profiles: { verification_status: 'pending' | 'approved' | 'rejected' } })[]>();
 
       if (error) {
         console.error('Error fetching merchants:', error);
