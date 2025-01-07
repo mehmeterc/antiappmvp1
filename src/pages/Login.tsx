@@ -30,15 +30,15 @@ const Login = () => {
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user);
         toast.success("Profile updated successfully");
+      } else if (event === "INITIAL_SESSION") {
+        // Handle initial session check
+        if (session) {
+          console.log("Active session found, redirecting to home");
+          navigate("/");
+        }
       } else {
         console.log("Other auth event:", event);
       }
-    });
-
-    // Set up error handling for sign-in attempts
-    const handleSignInError = supabase.auth.onError((error) => {
-      console.error("Authentication error:", error);
-      toast.error(error.message || "Invalid login credentials. Please try again.");
     });
 
     // Check current session on mount
@@ -63,7 +63,6 @@ const Login = () => {
     return () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
-      handleSignInError.subscription.unsubscribe();
     };
   }, [navigate]);
 
