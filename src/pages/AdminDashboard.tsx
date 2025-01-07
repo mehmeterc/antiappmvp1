@@ -84,15 +84,19 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      const formattedMerchants = data.map(merchant => ({
-        id: merchant.id,
-        business_name: merchant.business_name,
-        contact_email: merchant.contact_email,
-        profiles: merchant.profiles,
-        created_at: merchant.created_at,
-      }));
+      if (data) {
+        const formattedMerchants: MerchantProfile[] = data.map(merchant => ({
+          id: merchant.id,
+          business_name: merchant.business_name,
+          contact_email: merchant.contact_email,
+          profiles: {
+            verification_status: merchant.profiles.verification_status
+          },
+          created_at: merchant.created_at,
+        }));
 
-      setMerchants(formattedMerchants);
+        setMerchants(formattedMerchants);
+      }
     } catch (error) {
       console.error('Error fetching merchants:', error);
       toast.error('Failed to load merchants');
