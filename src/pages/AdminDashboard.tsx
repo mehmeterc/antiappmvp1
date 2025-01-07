@@ -71,20 +71,25 @@ const AdminDashboard = () => {
 
   const fetchMerchants = async () => {
     try {
+      console.log('Fetching merchants...');
       const { data, error } = await supabase
         .from('merchant_profiles')
         .select(`
           id,
           business_name,
           contact_email,
-          profiles:profiles!inner (verification_status),
+          profiles!inner (verification_status),
           created_at
         `);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching merchants:', error);
+        throw error;
+      }
 
       if (data) {
-        const formattedMerchants: MerchantProfile[] = data
+        console.log('Raw merchant data:', data);
+        const formattedMerchants = data
           .filter((merchant): merchant is (typeof data)[0] => {
             if (!merchant.profiles || typeof merchant.profiles !== 'object') {
               console.error('Invalid profiles data:', merchant.profiles);
@@ -102,6 +107,7 @@ const AdminDashboard = () => {
             created_at: merchant.created_at,
           }));
 
+        console.log('Formatted merchants:', formattedMerchants);
         setMerchants(formattedMerchants);
       }
     } catch (error) {
