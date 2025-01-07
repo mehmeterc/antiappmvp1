@@ -104,6 +104,47 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_profiles: {
+        Row: {
+          business_description: string | null
+          business_name: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          business_description?: string | null
+          business_name?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          business_description?: string | null
+          business_name?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           cafe_id: string | null
@@ -148,30 +189,138 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
           email: string | null
           full_name: string | null
           id: string
           payment_method: string | null
           updated_at: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           payment_method?: string | null
           updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           payment_method?: string | null
           updated_at?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
         }
         Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean | null
+          cafe_id: string | null
+          created_at: string | null
+          description: string | null
+          discount_percentage: number | null
+          end_time: string
+          id: string
+          merchant_id: string | null
+          start_time: string
+          title: string
+        }
+        Insert: {
+          active?: boolean | null
+          cafe_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          end_time: string
+          id?: string
+          merchant_id?: string | null
+          start_time: string
+          title: string
+        }
+        Update: {
+          active?: boolean | null
+          cafe_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          end_time?: string
+          id?: string
+          merchant_id?: string | null
+          start_time?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_cafe_id_fkey"
+            columns: ["cafe_id"]
+            isOneToOne: false
+            referencedRelation: "cafes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotions_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          merchant_id: string | null
+          response: string
+          review_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          merchant_id?: string | null
+          response: string
+          review_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          merchant_id?: string | null
+          response?: string
+          review_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_responses_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_responses_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -250,7 +399,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      account_type: "user" | "merchant" | "admin"
+      verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
