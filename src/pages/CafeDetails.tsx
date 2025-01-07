@@ -23,6 +23,16 @@ const CafeDetails = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast: uiToast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get the current user's ID when component mounts
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   useEffect(() => {
     const fetchCafeDetails = async () => {
@@ -55,10 +65,17 @@ const CafeDetails = () => {
           setCafe(mockCafe);
         }
 
-        // Check if cafe is saved
-        const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
-        const isAlreadySaved = savedCafes.some((savedCafe: { id: string }) => savedCafe.id === id);
-        setIsSaved(isAlreadySaved);
+        // Check if cafe is saved for current user
+        if (userId) {
+          const { data: savedCafe } = await supabase
+            .from('saved_cafes')
+            .select('*')
+            .eq('cafe_id', id)
+            .eq('user_id', userId)
+            .maybeSingle();
+          
+          setIsSaved(!!savedCafe);
+        }
 
       } catch (err) {
         console.error("Error fetching cafe details:", err);
@@ -69,38 +86,37 @@ const CafeDetails = () => {
       }
     };
 
-    if (id) {
+    if (id && userId) {
       fetchCafeDetails();
     }
-  }, [id]);
+  }, [id, userId]);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!cafe) return;
+    if (!cafe || !userId) {
+      toast.error("Please log in to save cafes");
+      return;
+    }
 
     try {
-      const { data: existingSave, error: checkError } = await supabase
-        .from('saved_cafes')
-        .select('*')
-        .eq('cafe_id', id)
-        .maybeSingle();
-
-      if (checkError) throw checkError;
-
-      if (!isSaved && !existingSave) {
+      if (!isSaved) {
         const { error: saveError } = await supabase
           .from('saved_cafes')
-          .insert({ cafe_id: id });
+          .insert({ 
+            cafe_id: id,
+            user_id: userId 
+          });
 
         if (saveError) throw saveError;
 
         setIsSaved(true);
         toast.success("Cafe saved successfully!");
-      } else if (existingSave) {
+      } else {
         const { error: deleteError } = await supabase
           .from('saved_cafes')
           .delete()
-          .eq('cafe_id', id);
+          .eq('cafe_id', id)
+          .eq('user_id', userId);
 
         if (deleteError) throw deleteError;
 
