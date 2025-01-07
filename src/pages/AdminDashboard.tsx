@@ -85,15 +85,23 @@ const AdminDashboard = () => {
       if (error) throw error;
 
       if (data) {
-        const formattedMerchants: MerchantProfile[] = data.map(merchant => ({
-          id: merchant.id,
-          business_name: merchant.business_name,
-          contact_email: merchant.contact_email,
-          profiles: {
-            verification_status: merchant.profiles.verification_status
-          },
-          created_at: merchant.created_at,
-        }));
+        const formattedMerchants: MerchantProfile[] = data.map(merchant => {
+          // Ensure profiles data exists and has the correct shape
+          if (!merchant.profiles || Array.isArray(merchant.profiles)) {
+            console.error('Invalid profiles data:', merchant.profiles);
+            return null;
+          }
+
+          return {
+            id: merchant.id,
+            business_name: merchant.business_name,
+            contact_email: merchant.contact_email,
+            profiles: {
+              verification_status: merchant.profiles.verification_status
+            },
+            created_at: merchant.created_at,
+          };
+        }).filter((merchant): merchant is MerchantProfile => merchant !== null);
 
         setMerchants(formattedMerchants);
       }
