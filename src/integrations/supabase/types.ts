@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          id: string
+          table_name: string
+          target_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          id?: string
+          table_name: string
+          target_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          id?: string
+          table_name?: string
+          target_id?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_history: {
         Row: {
           cafe_id: string
@@ -391,6 +426,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_expired_promotions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_secret: {
         Args: {
           secret_name: string
