@@ -4,6 +4,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ const Login = () => {
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user);
         toast.success("Profile updated successfully");
+      } else if (event === "AUTH_ERROR") {
+        console.error("Authentication error occurred");
+        toast.error("Invalid login credentials. Please try again.");
       } else {
         console.log("Other auth event:", event);
       }
@@ -79,6 +83,7 @@ const Login = () => {
               button: { width: '100%' },
               container: { width: '100%' },
               anchor: { color: '#0D9F6C' },
+              message: { color: 'red' },
             },
           }}
           providers={[]}
