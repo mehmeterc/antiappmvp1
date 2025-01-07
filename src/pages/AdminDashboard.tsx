@@ -77,22 +77,22 @@ const AdminDashboard = () => {
           id,
           business_name,
           contact_email,
-          profiles (verification_status),
+          profiles:profiles!inner (verification_status),
           created_at
-        `)
-        .order('created_at', { ascending: false });
+        `);
 
       if (error) throw error;
 
       if (data) {
-        const formattedMerchants: MerchantProfile[] = data.map(merchant => {
-          // Ensure profiles data exists and has the correct shape
-          if (!merchant.profiles || Array.isArray(merchant.profiles)) {
-            console.error('Invalid profiles data:', merchant.profiles);
-            return null;
-          }
-
-          return {
+        const formattedMerchants: MerchantProfile[] = data
+          .filter((merchant): merchant is (typeof data)[0] => {
+            if (!merchant.profiles || typeof merchant.profiles !== 'object') {
+              console.error('Invalid profiles data:', merchant.profiles);
+              return false;
+            }
+            return true;
+          })
+          .map(merchant => ({
             id: merchant.id,
             business_name: merchant.business_name,
             contact_email: merchant.contact_email,
@@ -100,8 +100,7 @@ const AdminDashboard = () => {
               verification_status: merchant.profiles.verification_status
             },
             created_at: merchant.created_at,
-          };
-        }).filter((merchant): merchant is MerchantProfile => merchant !== null);
+          }));
 
         setMerchants(formattedMerchants);
       }
