@@ -19,7 +19,9 @@ interface MerchantProfile {
   id: string;
   business_name: string;
   contact_email: string;
-  verification_status: 'pending' | 'approved' | 'rejected';
+  profiles: {
+    verification_status: 'pending' | 'approved' | 'rejected';
+  };
   created_at: string;
 }
 
@@ -86,7 +88,7 @@ const AdminDashboard = () => {
         id: merchant.id,
         business_name: merchant.business_name,
         contact_email: merchant.contact_email,
-        verification_status: merchant.profiles.verification_status,
+        profiles: merchant.profiles,
         created_at: merchant.created_at,
       }));
 
@@ -177,12 +179,12 @@ const AdminDashboard = () => {
                   <TableRow key={merchant.id}>
                     <TableCell>{merchant.business_name}</TableCell>
                     <TableCell>{merchant.contact_email}</TableCell>
-                    <TableCell>{getStatusBadge(merchant.verification_status)}</TableCell>
+                    <TableCell>{getStatusBadge(merchant.profiles.verification_status)}</TableCell>
                     <TableCell>
                       {format(new Date(merchant.created_at), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell>
-                      {merchant.verification_status === 'pending' && (
+                      {merchant.profiles.verification_status === 'pending' && (
                         <div className="space-x-2">
                           <Button
                             size="sm"
