@@ -12,6 +12,7 @@ export const MerchantSignupForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const validatePassword = (password: string) => {
     if (password.length < 6) {
@@ -23,15 +24,16 @@ export const MerchantSignupForm = () => {
   const handleMerchantSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Validate password
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      return;
-    }
+    setLoading(true);
 
     try {
+      // Validate password
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        setError(passwordError);
+        return;
+      }
+
       console.log("Attempting merchant signup with email:", email);
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -57,6 +59,8 @@ export const MerchantSignupForm = () => {
       console.error("Merchant signup error:", error);
       setError(error.message || "Failed to create merchant account");
       toast.error(error.message || "Failed to create merchant account");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,6 +81,7 @@ export const MerchantSignupForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1"
           required
+          disabled={loading}
         />
       </div>
       
@@ -90,10 +95,13 @@ export const MerchantSignupForm = () => {
           className="mt-1"
           required
           minLength={6}
+          disabled={loading}
         />
       </div>
       
-      <Button type="submit" className="w-full">Sign Up as Merchant</Button>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creating Account..." : "Sign Up as Merchant"}
+      </Button>
     </form>
   );
 };

@@ -21,24 +21,31 @@ export const Navigation = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Navigation: Setting up auth and profile check");
+    console.log("Navigation: Initializing auth and profile check");
     
     const fetchAccountType = async () => {
       if (session?.user?.id) {
-        console.log("Navigation: Fetching account type for user:", session.user.id);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('account_type')
-          .eq('id', session.user.id)
-          .single();
+        console.log("Navigation: Fetching profile for user:", session.user.id);
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('account_type')
+            .eq('id', session.user.id)
+            .single();
 
-        if (error) {
-          console.error("Navigation: Error fetching account type:", error);
-          toast.error("Error loading user profile");
-        } else if (data) {
-          console.log("Navigation: Account type fetched:", data.account_type);
-          setAccountType(data.account_type);
+          if (error) {
+            console.error("Navigation: Profile fetch error:", error);
+            toast.error("Error loading profile");
+          } else if (data) {
+            console.log("Navigation: Profile loaded, account type:", data.account_type);
+            setAccountType(data.account_type);
+          }
+        } catch (error) {
+          console.error("Navigation: Unexpected error:", error);
+          toast.error("Unexpected error occurred");
         }
+      } else {
+        setAccountType(null);
       }
       setLoading(false);
     };
@@ -78,7 +85,8 @@ export const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      console.log("Navigation: Initiating logout");
+      console.log("Navigation: Starting logout process");
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -88,11 +96,13 @@ export const Navigation = () => {
       navigate('/login');
       toast.success("Logged out successfully");
     } catch (error) {
-      console.error('Navigation: Error during logout:', error);
+      console.error('Navigation: Logout error:', error);
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
-      toast.error("Error during logout, but session cleared");
+      toast.error("Error during logout, session cleared");
+    } finally {
+      setLoading(false);
     }
   };
 

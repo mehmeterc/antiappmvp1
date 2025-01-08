@@ -23,15 +23,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   
   useEffect(() => {
-    console.log("ProtectedRoute: Checking session:", session ? "Logged in" : "Not logged in");
+    console.log("ProtectedRoute: Session state:", session ? "Active" : "None");
   }, [session]);
   
   if (!session) {
-    console.log("ProtectedRoute: No session, redirecting to login");
+    console.log("ProtectedRoute: Redirecting to login - no session");
     return <Navigate to="/login" replace />;
   }
   
-  console.log("ProtectedRoute: Session exists, rendering children");
   return <>{children}</>;
 };
 
@@ -39,7 +38,7 @@ function App() {
   const session = useSession();
 
   useEffect(() => {
-    console.log("App: Auth session state changed:", session ? "Logged in" : "Logged out");
+    console.log("App: Session state changed:", session ? "Logged in" : "Not logged in");
   }, [session]);
 
   return (
@@ -47,6 +46,7 @@ function App() {
       <Navigation />
       <div className="min-h-screen pt-16 pb-20">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/search" element={<Search />} />
           <Route path="/login" element={<Login />} />
@@ -100,7 +100,7 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Catch all route - redirect to home */}
+          {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
