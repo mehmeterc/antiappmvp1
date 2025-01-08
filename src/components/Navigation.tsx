@@ -18,20 +18,29 @@ export const Navigation = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const [accountType, setAccountType] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Navigation: Setting up auth and profile check");
+    
     const fetchAccountType = async () => {
       if (session?.user?.id) {
+        console.log("Navigation: Fetching account type for user:", session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('account_type')
           .eq('id', session.user.id)
           .single();
 
-        if (!error && data) {
+        if (error) {
+          console.error("Navigation: Error fetching account type:", error);
+          toast.error("Error loading user profile");
+        } else if (data) {
+          console.log("Navigation: Account type fetched:", data.account_type);
           setAccountType(data.account_type);
         }
       }
+      setLoading(false);
     };
 
     fetchAccountType();
@@ -69,17 +78,21 @@ export const Navigation = () => {
 
   const handleLogout = async () => {
     try {
+      console.log("Navigation: Initiating logout");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      console.log("Navigation: Logout successful");
       localStorage.clear();
       sessionStorage.clear();
-      await supabase.auth.signOut();
       navigate('/login');
       toast.success("Logged out successfully");
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Navigation: Error during logout:', error);
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
-      toast.success("Logged out successfully");
+      toast.error("Error during logout, but session cleared");
     }
   };
 
@@ -101,7 +114,9 @@ export const Navigation = () => {
             Find Spaces
           </Button>
 
-          {session ? (
+          {loading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+          ) : session ? (
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
