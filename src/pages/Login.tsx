@@ -62,10 +62,6 @@ const Login = () => {
         console.log("User updated:", session?.user);
         setAuthError(null);
         toast.success("Profile updated successfully");
-      } else if (event === "USER_DELETED") {
-        console.log("User deleted");
-        setAuthError(null);
-        toast.info("Account deleted successfully");
       }
     });
 
