@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 
-export const About = () => {
+const About = () => {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
@@ -56,3 +56,5 @@ export const About = () => {
     </Layout>
   );
 };
+
+export default About;
