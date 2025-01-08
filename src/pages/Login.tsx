@@ -18,23 +18,23 @@ const Login = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Setting up auth state change listener in Login");
+    console.log("Login: Component mounted, checking session");
     
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error("Session check error:", error);
+          console.error("Login: Session check error:", error);
           handleAuthError(error);
           return;
         }
         
         if (session) {
-          console.log("Active session found in Login, redirecting to home");
+          console.log("Login: Active session found, redirecting to home");
           navigate("/");
         }
       } catch (error) {
-        console.error("Session check error:", error);
+        console.error("Login: Unexpected error during session check:", error);
         handleAuthError(error as AuthError);
       } finally {
         setLoading(false);
@@ -44,43 +44,60 @@ const Login = () => {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed in Login:", event);
+      console.log("Login: Auth state changed:", event, session?.user?.email);
       
-      if (event === "SIGNED_IN") {
-        console.log("User signed in successfully:", session?.user);
-        setAuthError(null);
-        toast.success("Successfully signed in!");
-        navigate("/");
-      } else if (event === "SIGNED_OUT") {
-        console.log("User signed out");
-        setAuthError(null);
-        toast.info("Signed out successfully");
-      } else if (event === "PASSWORD_RECOVERY") {
-        setAuthError(null);
-        toast.info("Please check your email to reset your password");
-      } else if (event === "USER_UPDATED") {
-        console.log("User updated:", session?.user);
-        setAuthError(null);
-        toast.success("Profile updated successfully");
+      switch (event) {
+        case "SIGNED_IN":
+          console.log("Login: User signed in successfully");
+          setAuthError(null);
+          toast.success("Successfully signed in!");
+          navigate("/");
+          break;
+          
+        case "SIGNED_OUT":
+          console.log("Login: User signed out");
+          setAuthError(null);
+          toast.info("Signed out successfully");
+          break;
+          
+        case "PASSWORD_RECOVERY":
+          setAuthError(null);
+          toast.info("Please check your email to reset your password");
+          break;
+          
+        case "USER_UPDATED":
+          console.log("Login: User profile updated");
+          setAuthError(null);
+          toast.success("Profile updated successfully");
+          break;
+          
+        case "INITIAL_SESSION":
+          console.log("Login: Initial session loaded");
+          if (session) {
+            navigate("/");
+          }
+          break;
       }
     });
 
     return () => {
-      console.log("Cleaning up auth state change listener in Login");
+      console.log("Login: Cleaning up auth state listener");
       subscription.unsubscribe();
     };
   }, [navigate]);
 
   const handleAuthError = (error: AuthError) => {
-    console.error("Auth error:", error);
+    console.error("Login: Auth error:", error);
     let errorMessage = "An error occurred during authentication";
     
     if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Invalid email or password. Please try again.";
+      errorMessage = "Invalid email or password. Please try again or sign up if you don't have an account.";
     } else if (error.message.includes("Email not confirmed")) {
       errorMessage = "Please verify your email address before signing in.";
     } else if (error.message.includes("Password should be")) {
       errorMessage = "Password should be at least 6 characters long.";
+    } else if (error.message.includes("rate limit")) {
+      errorMessage = "Too many login attempts. Please try again later.";
     }
     
     setAuthError(errorMessage);
