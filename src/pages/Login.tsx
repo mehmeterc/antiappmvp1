@@ -11,6 +11,68 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Let's create a separate component for the merchant signup form
+const MerchantSignupForm = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleMerchantSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            account_type: 'merchant'
+          }
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data.session) {
+        toast.success("Merchant account created successfully!");
+        navigate("/merchant/profile");
+      } else {
+        toast.info("Please check your email to verify your account");
+      }
+    } catch (error) {
+      console.error("Merchant signup error:", error);
+      toast.error("Failed to create merchant account");
+    }
+  };
+
+  return (
+    <form onSubmit={handleMerchantSignup} className="space-y-4">
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full">Sign Up as Merchant</Button>
+    </form>
+  );
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [authError, setAuthError] = useState<string | null>(null);
@@ -84,30 +146,6 @@ const Login = () => {
     toast.error(errorMessage);
   };
 
-  const handleMerchantSignup = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.signUp({
-        options: {
-          data: {
-            account_type: 'merchant'
-          }
-        }
-      });
-
-      if (error) throw error;
-      
-      if (session) {
-        toast.success("Merchant account created successfully!");
-        navigate("/merchant/profile");
-      } else {
-        toast.info("Please check your email to verify your account");
-      }
-    } catch (error) {
-      console.error("Merchant signup error:", error);
-      toast.error("Failed to create merchant account");
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-primary/5 to-primary/10 flex items-center justify-center">
@@ -173,12 +211,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-4">
-              <Button 
-                onClick={() => navigate("/merchant/register")} 
-                className="w-full"
-              >
-                Register as Merchant
-              </Button>
+              <MerchantSignupForm />
               
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -186,7 +219,7 @@ const Login = () => {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-white px-2 text-muted-foreground">
-                    Or
+                    Or sign in
                   </span>
                 </div>
               </div>
