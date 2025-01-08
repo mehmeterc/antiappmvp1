@@ -5,73 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AuthError } from "@supabase/supabase-js";
 import { Coffee } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Let's create a separate component for the merchant signup form
-const MerchantSignupForm = () => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleMerchantSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            account_type: 'merchant'
-          }
-        }
-      });
-
-      if (error) throw error;
-      
-      if (data.session) {
-        toast.success("Merchant account created successfully!");
-        navigate("/merchant/profile");
-      } else {
-        toast.info("Please check your email to verify your account");
-      }
-    } catch (error) {
-      console.error("Merchant signup error:", error);
-      toast.error("Failed to create merchant account");
-    }
-  };
-
-  return (
-    <form onSubmit={handleMerchantSignup} className="space-y-4">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-          required
-        />
-      </div>
-      <Button type="submit" className="w-full">Sign Up as Merchant</Button>
-    </form>
-  );
-};
+import { MerchantSignupForm } from "@/components/auth/MerchantSignupForm";
+import { AuthDivider } from "@/components/auth/AuthDivider";
+import { AuthError } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -212,18 +151,7 @@ const Login = () => {
 
             <div className="space-y-4">
               <MerchantSignupForm />
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">
-                    Or sign in
-                  </span>
-                </div>
-              </div>
-
+              <AuthDivider />
               <Auth
                 supabaseClient={supabase}
                 appearance={{
