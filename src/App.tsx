@@ -14,7 +14,7 @@ import MerchantRegistration from "./pages/MerchantRegistration";
 import AdminDashboard from "./pages/AdminDashboard";
 import CafeDetails from "./pages/CafeDetails";
 import CheckInStatus from "./pages/CheckInStatus";
-import About from "./pages/About";
+import { About } from "./pages/About";
 import { Toaster } from "./components/ui/sonner";
 
 function App() {
