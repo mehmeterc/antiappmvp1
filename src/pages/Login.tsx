@@ -62,6 +62,10 @@ const Login = () => {
         console.log("User updated:", session?.user);
         setAuthError(null);
         toast.success("Profile updated successfully");
+      } else if (event === "USER_DELETED") {
+        console.log("User deleted");
+        setAuthError(null);
+        toast.info("Account deleted successfully");
       }
     });
 
@@ -79,6 +83,8 @@ const Login = () => {
       errorMessage = "Invalid email or password. Please try again.";
     } else if (error.message.includes("Email not confirmed")) {
       errorMessage = "Please verify your email address before signing in.";
+    } else if (error.message.includes("Password should be")) {
+      errorMessage = "Password should be at least 6 characters long.";
     }
     
     setAuthError(errorMessage);
