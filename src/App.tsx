@@ -1,20 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
-import { Index } from "./pages/Index";
-import { Search } from "./pages/Search";
-import { Login } from "./pages/Login";
-import { Profile } from "./pages/Profile";
-import { SavedCafes } from "./pages/SavedCafes";
-import { History } from "./pages/History";
-import { Messages } from "./pages/Messages";
-import { Reviews } from "./pages/Reviews";
-import { MerchantProfile } from "./pages/MerchantProfile";
-import { MerchantRegistration } from "./pages/MerchantRegistration";
-import { AdminDashboard } from "./pages/AdminDashboard";
-import { CafeDetails } from "./pages/CafeDetails";
-import { CheckInStatus } from "./pages/CheckInStatus";
-import { About } from "./pages/About";
+import Index from "./pages/Index";
+import Search from "./pages/Search";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import SavedCafes from "./pages/SavedCafes";
+import History from "./pages/History";
+import Messages from "./pages/Messages";
+import Reviews from "./pages/Reviews";
+import MerchantProfile from "./pages/MerchantProfile";
+import MerchantRegistration from "./pages/MerchantRegistration";
+import AdminDashboard from "./pages/AdminDashboard";
+import CafeDetails from "./pages/CafeDetails";
+import CheckInStatus from "./pages/CheckInStatus";
+import About from "./pages/About";
 import { Toaster } from "./components/ui/sonner";
 
 function App() {
