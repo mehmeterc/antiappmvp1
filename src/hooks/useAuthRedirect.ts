@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,16 +13,25 @@ export const useAuthRedirect = () => {
     console.error("Login: Auth error:", error);
     let errorMessage = "An error occurred during authentication";
     
-    if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Invalid email or password. Please try again or sign up if you don't have an account.";
-    } else if (error.message.includes("Email not confirmed")) {
-      errorMessage = "Please verify your email address before signing in.";
-    } else if (error.message.includes("Password should be")) {
-      errorMessage = "Password should be at least 6 characters long.";
-    } else if (error.message.includes("rate limit")) {
-      errorMessage = "Too many login attempts. Please try again later.";
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password. Please try again.";
+          }
+          break;
+        case 422:
+          errorMessage = "Please fill in all required fields.";
+          break;
+        case 429:
+          errorMessage = "Too many login attempts. Please try again later.";
+          break;
+        default:
+          errorMessage = error.message;
+      }
     }
     
+    console.log("Login: Setting error message:", errorMessage);
     setAuthError(errorMessage);
     toast.error(errorMessage);
   };
