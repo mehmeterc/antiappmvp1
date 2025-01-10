@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-
-interface UserListProps {
-  currentUserId: string;
-  onUserSelect: (user: Profile) => void;
-  selectedUser: Profile | null;
-}
+import { UserListProps } from "@/types/message";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserListProps) => {
   const [users, setUsers] = useState<Profile[]>([]);
@@ -30,11 +25,11 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
         
         if (error) {
           console.error("Error fetching users:", error);
-          toast.error("Unable to load users. Please refresh the page.");
+          toast.error("Unable to load users");
           return;
         }
         
-        console.log("Users fetched:", data);
+        console.log("Users fetched:", data?.length);
         setUsers(data || []);
       } catch (error) {
         console.error("Error in fetchUsers:", error);
@@ -46,7 +41,6 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
 
     fetchUsers();
 
-    // Subscribe to profile changes
     const channel = supabase
       .channel('public:profiles')
       .on('postgres_changes', 
@@ -55,8 +49,8 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
           schema: 'public', 
           table: 'profiles' 
         }, 
-        (payload) => {
-          console.log('Profile change received:', payload);
+        () => {
+          console.log('Profile changes detected, refreshing user list');
           fetchUsers();
         }
       )
@@ -100,30 +94,42 @@ export const UserList = ({ currentUserId, onUserSelect, selectedUser }: UserList
   }
 
   return (
-    <div className="overflow-y-auto h-full">
-      {users.map((user) => (
-        <div
-          key={user.id}
-          className={`p-3 flex items-center gap-3 hover:bg-gray-50 cursor-pointer border-b transition-colors ${
-            selectedUser?.id === user.id ? "bg-gray-100" : ""
-          }`}
-          onClick={() => onUserSelect(user)}
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar_url || undefined} />
-            <AvatarFallback>{user.full_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm truncate">{getDisplayName(user)}</p>
-            <p className="text-xs text-gray-500 truncate">{user.email}</p>
-          </div>
-          {user.id === selectedUser?.id && (
-            <Badge variant="secondary" className="ml-auto">
-              Selected
-            </Badge>
-          )}
-        </div>
-      ))}
+    <div className="divide-y">
+      <div className="p-4 bg-gray-50">
+        <h2 className="font-medium">Messages</h2>
+      </div>
+      
+      <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
+        {users.map((user) => (
+          <button
+            key={user.id}
+            onClick={() => onUserSelect(user)}
+            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left ${
+              selectedUser?.id === user.id ? "bg-gray-100" : ""
+            }`}
+          >
+            <Avatar>
+              <AvatarImage src={user.avatar_url || undefined} />
+              <AvatarFallback>{user.full_name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
+            </Avatar>
+            
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm truncate">
+                {getDisplayName(user)}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user.email}
+              </p>
+            </div>
+            
+            {user.id === selectedUser?.id && (
+              <Badge variant="secondary" className="ml-auto">
+                Selected
+              </Badge>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
