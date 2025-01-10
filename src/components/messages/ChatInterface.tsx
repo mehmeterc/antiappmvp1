@@ -24,7 +24,7 @@ export const ChatInterface = ({
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="font-medium">{selectedUser.full_name || 'Anonymous'}</h2>
+          <h2 className="font-medium">{selectedUser?.full_name || 'Anonymous'}</h2>
         </div>
       </header>
 
