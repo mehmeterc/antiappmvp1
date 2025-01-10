@@ -1,28 +1,36 @@
+import { Profile } from './profile';
+
 export interface Message {
   id: string;
   sender_id: string;
   receiver_id: string;
   content: string;
+  created_at: string;
   cafe_id?: string;
-  created_at?: string;
 }
 
 export interface ChatProps {
-  receiverId: string;
-  cafeId?: string;
+  selectedUser: Profile | null;
+  messages: Message[];
+  senderProfile: Profile | null;
+  isLoading: boolean;
+  onBack: () => void;
+  onSendMessage: (content: string) => Promise<void>;
 }
 
 export interface MessageInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<void>;
   disabled?: boolean;
 }
 
 export interface MessageListProps {
   messages: Message[];
-  currentUserId: string;
+  senderProfile: Profile | null;
+  receiverProfile: Profile | null;
 }
 
 export interface UserListProps {
-  onSelectUser: (userId: string) => void;
-  selectedUserId?: string;
+  currentUserId: string;
+  onUserSelect: (user: Profile) => void;
+  selectedUser: Profile | null;
 }
