@@ -1,6 +1,21 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
-import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star, Settings } from "lucide-react";
+import { 
+  User, 
+  LogIn, 
+  Search, 
+  Eye, 
+  Coffee, 
+  Menu, 
+  History, 
+  MessageSquare, 
+  Info, 
+  Star, 
+  LayoutDashboard,
+  Gift,
+  HelpCircle,
+  LogOut
+} from "lucide-react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   Sheet,
@@ -53,35 +68,49 @@ export const Navigation = () => {
     fetchAccountType();
   }, [session, supabase]);
 
-  const menuItems = [
+  const getMerchantMenuItems = () => [
+    { 
+      label: "Dashboard", 
+      icon: <LayoutDashboard className="h-4 w-4" />, 
+      path: "/merchant/dashboard" 
+    },
+    { 
+      label: "Profile", 
+      icon: <User className="h-4 w-4" />, 
+      path: "/merchant/profile" 
+    },
+    { 
+      label: "Promotions", 
+      icon: <Gift className="h-4 w-4" />, 
+      path: "/merchant/promotions" 
+    },
+    { 
+      label: "Reviews", 
+      icon: <Star className="h-4 w-4" />, 
+      path: "/merchant/reviews" 
+    },
+    { 
+      label: "Support", 
+      icon: <HelpCircle className="h-4 w-4" />, 
+      path: "/support" 
+    },
+    { 
+      label: "About", 
+      icon: <Info className="h-4 w-4" />, 
+      path: "/about" 
+    },
+  ];
+
+  const getUserMenuItems = () => [
     { label: "Profile", icon: <User className="h-4 w-4" />, path: "/profile" },
-    { label: "Saved Cafes", icon: <BookMarked className="h-4 w-4" />, path: "/saved" },
+    { label: "Saved Cafes", icon: <Eye className="h-4 w-4" />, path: "/saved" },
     { label: "History", icon: <History className="h-4 w-4" />, path: "/history" },
     { label: "Messages", icon: <MessageSquare className="h-4 w-4" />, path: "/messages" },
     { label: "Reviews", icon: <Star className="h-4 w-4" />, path: "/reviews" },
+    { label: "About", icon: <Info className="h-4 w-4" />, path: "/about" },
   ];
 
-  if (accountType === 'merchant') {
-    menuItems.push({ 
-      label: "Merchant Profile", 
-      icon: <Settings className="h-4 w-4" />, 
-      path: "/merchant/profile" 
-    });
-  }
-
-  if (accountType === 'admin') {
-    menuItems.push({ 
-      label: "Admin Dashboard", 
-      icon: <Settings className="h-4 w-4" />, 
-      path: "/admin" 
-    });
-  }
-
-  menuItems.push({ 
-    label: "About", 
-    icon: <Info className="h-4 w-4" />, 
-    path: "/about" 
-  });
+  const menuItems = accountType === 'merchant' ? getMerchantMenuItems() : getUserMenuItems();
 
   const handleLogout = async () => {
     try {
@@ -157,7 +186,7 @@ export const Navigation = () => {
                     className="w-full justify-start"
                     onClick={handleLogout}
                   >
-                    <LogIn className="h-4 w-4 mr-2" />
+                    <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
                 </div>
