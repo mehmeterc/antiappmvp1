@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Home, Eye, History, MessageSquare } from "lucide-react";
+import { Home, Eye, History, MessageSquare, MapPin } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 
 export const Footer = () => {
