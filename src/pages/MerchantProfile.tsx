@@ -1,3 +1,8 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { Button } from '@/components/ui/button';
+
 interface MerchantProfileProps {
   preview?: boolean;
 }
