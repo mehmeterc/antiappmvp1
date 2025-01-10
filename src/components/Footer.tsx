@@ -1,17 +1,45 @@
 import { useNavigate } from "react-router-dom";
-import { Home, Eye, History, MessageSquare, MapPin } from "lucide-react";
-import { useSession } from "@supabase/auth-helpers-react";
+import { Home, Eye, History, MessageSquare } from "lucide-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useEffect, useState } from "react";
 
 export const Footer = () => {
   const navigate = useNavigate();
   const session = useSession();
+  const supabase = useSupabaseClient();
+  const [accountType, setAccountType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      if (session?.user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('account_type')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error) {
+            console.error("Footer: Profile fetch error:", error);
+          } else if (data) {
+            console.log("Footer: Profile loaded, account type:", data.account_type);
+            setAccountType(data.account_type);
+          }
+        } catch (error) {
+          console.error("Footer: Unexpected error:", error);
+        }
+      }
+    };
+
+    fetchAccountType();
+  }, [session, supabase]);
 
   const footerItems = [
     { icon: <Home className="h-6 w-6" />, label: "Home", path: "/" },
     { 
       icon: <Eye className="h-6 w-6" />, 
-      label: session?.user?.id ? "Preview" : "Saved", 
-      path: session?.user?.id ? "/merchant/preview" : "/saved" 
+      label: accountType === 'merchant' ? "Preview" : "Saved",
+      path: accountType === 'merchant' ? "/merchant/preview" : "/saved"
     },
     { icon: <History className="h-6 w-6" />, label: "History", path: "/history" },
     { icon: <MessageSquare className="h-6 w-6" />, label: "Messages", path: "/messages" },

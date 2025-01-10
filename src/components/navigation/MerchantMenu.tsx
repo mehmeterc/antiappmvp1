@@ -1,10 +1,10 @@
 import { 
-  LayoutDashboard, 
-  User, 
-  Gift, 
-  Star, 
-  HelpCircle, 
-  Info, 
+  LayoutDashboard,
+  User,
+  Tag,
+  Star,
+  Info,
+  HelpCircle,
   LogOut 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -33,23 +33,23 @@ export const MerchantMenu = ({ onClose }: MerchantMenuProps) => {
     },
     { 
       label: "Promotions", 
-      icon: <Gift className="h-4 w-4" />, 
+      icon: <Tag className="h-4 w-4" />, 
       path: "/merchant/promotions" 
     },
     { 
       label: "Reviews", 
       icon: <Star className="h-4 w-4" />, 
-      path: "/merchant/reviews" 
+      path: "/reviews" 
+    },
+    { 
+      label: "About AntiApp", 
+      icon: <Info className="h-4 w-4" />, 
+      path: "/about" 
     },
     { 
       label: "Support", 
       icon: <HelpCircle className="h-4 w-4" />, 
       path: "/support" 
-    },
-    { 
-      label: "About", 
-      icon: <Info className="h-4 w-4" />, 
-      path: "/about" 
     },
   ];
 
@@ -79,7 +79,7 @@ export const MerchantMenu = ({ onClose }: MerchantMenuProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       {menuItems.map((item) => (
         <Button
           key={item.path}
@@ -93,7 +93,7 @@ export const MerchantMenu = ({ onClose }: MerchantMenuProps) => {
       ))}
       <Button
         variant="destructive"
-        className="w-full justify-start"
+        className="w-full justify-start mt-8"
         onClick={handleLogout}
       >
         <LogOut className="h-4 w-4 mr-2" />
