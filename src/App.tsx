@@ -84,6 +84,11 @@ function App() {
               <MerchantProfile />
             </ProtectedRoute>
           } />
+          <Route path="/merchant/preview" element={
+            <ProtectedRoute>
+              <MerchantProfile preview={true} />
+            </ProtectedRoute>
+          } />
           <Route path="/merchant/register" element={
             <ProtectedRoute>
               <MerchantRegistration />

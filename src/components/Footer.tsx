@@ -1,12 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Home, BookMarked, History, MessageSquare, MapPin } from "lucide-react";
+import { Home, Eye, History, MessageSquare } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
 
 export const Footer = () => {
   const navigate = useNavigate();
+  const session = useSession();
 
   const footerItems = [
     { icon: <Home className="h-6 w-6" />, label: "Home", path: "/" },
-    { icon: <BookMarked className="h-6 w-6" />, label: "Saved", path: "/saved" },
+    { 
+      icon: <Eye className="h-6 w-6" />, 
+      label: session?.user?.id ? "Preview" : "Saved", 
+      path: session?.user?.id ? "/merchant/preview" : "/saved" 
+    },
     { icon: <History className="h-6 w-6" />, label: "History", path: "/history" },
     { icon: <MessageSquare className="h-6 w-6" />, label: "Messages", path: "/messages" },
   ];
