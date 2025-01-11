@@ -62,14 +62,16 @@ export const Navigation = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            className="hidden md:flex items-center"
-            onClick={() => navigate("/search")}
-          >
-            <Search className="h-4 w-4 mr-2" />
-            Find Spaces
-          </Button>
+          {!loading && accountType !== 'merchant' && (
+            <Button
+              variant="ghost"
+              className="hidden md:flex items-center"
+              onClick={() => navigate("/search")}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Find Spaces
+            </Button>
+          )}
 
           {loading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
@@ -84,7 +86,7 @@ export const Navigation = () => {
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription>
-                    Navigate through AntiApp
+                    {accountType === 'merchant' ? 'Merchant Dashboard' : 'Navigate through AntiApp'}
                   </SheetDescription>
                 </SheetHeader>
                 {accountType === 'merchant' ? (
