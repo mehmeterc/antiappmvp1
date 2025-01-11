@@ -35,44 +35,20 @@ const Dashboard = () => {
       try {
         console.log("Fetching dashboard stats for merchant:", session.user.id);
         
-        // First, get the cafes owned by this merchant
-        const { data: promotions, error: promotionsError } = await supabase
-          .from('promotions')
-          .select('cafe_id')
-          .eq('merchant_id', session.user.id);
-
-        if (promotionsError) throw promotionsError;
-
-        // Extract unique cafe IDs
-        const cafeIds = [...new Set(promotions?.map(p => p.cafe_id) || [])];
-        console.log("Merchant's cafe IDs:", cafeIds);
-
-        if (cafeIds.length === 0) {
-          console.log("No cafes found for merchant");
-          setStats({
-            totalBookings: 0,
-            averageRating: 0,
-            activePromotions: 0,
-            todayBookings: 0
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Get bookings for all merchant's cafes
+        // Get total bookings
         const { data: bookings } = await supabase
           .from('booking_history')
           .select('*')
-          .in('cafe_id', cafeIds);
+          .eq('merchant_id', session.user.id);
 
-        // Get reviews for all merchant's cafes
+        // Get average rating
         const { data: reviews } = await supabase
           .from('reviews')
           .select('rating')
-          .in('cafe_id', cafeIds);
+          .eq('merchant_id', session.user.id);
 
-        // Get active promotions count
-        const { data: activePromos } = await supabase
+        // Get active promotions
+        const { data: promotions } = await supabase
           .from('promotions')
           .select('*')
           .eq('merchant_id', session.user.id)
@@ -83,20 +59,13 @@ const Dashboard = () => {
         const averageRating = reviews?.length 
           ? reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length 
           : 0;
-        const activePromotions = activePromos?.length || 0;
+        const activePromotions = promotions?.length || 0;
         
         // Calculate today's bookings
         const today = new Date().toISOString().split('T')[0];
         const todayBookings = bookings?.filter(booking => 
           booking.check_in_time.startsWith(today)
         ).length || 0;
-
-        console.log("Calculated stats:", {
-          totalBookings,
-          averageRating,
-          activePromotions,
-          todayBookings
-        });
 
         setStats({
           totalBookings,

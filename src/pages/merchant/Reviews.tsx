@@ -33,27 +33,6 @@ const Reviews = () => {
 
       try {
         console.log("Fetching reviews for merchant:", session.user.id);
-        
-        // First, get the cafes owned by this merchant through promotions
-        const { data: promotions, error: promotionsError } = await supabase
-          .from('promotions')
-          .select('cafe_id')
-          .eq('merchant_id', session.user.id);
-
-        if (promotionsError) throw promotionsError;
-
-        // Extract unique cafe IDs
-        const cafeIds = [...new Set(promotions?.map(p => p.cafe_id) || [])];
-        console.log("Merchant's cafe IDs:", cafeIds);
-
-        if (cafeIds.length === 0) {
-          console.log("No cafes found for merchant");
-          setReviews([]);
-          setLoading(false);
-          return;
-        }
-
-        // Get reviews for all merchant's cafes
         const { data, error } = await supabase
           .from('reviews')
           .select(`
@@ -61,7 +40,7 @@ const Reviews = () => {
             user:profiles(full_name),
             response:review_responses(response, created_at)
           `)
-          .in('cafe_id', cafeIds)
+          .eq('merchant_id', session.user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
