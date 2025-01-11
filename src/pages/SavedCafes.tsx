@@ -32,7 +32,26 @@ const SavedCafes = () => {
 
           if (cafesError) throw cafesError;
 
-          setSavedCafes(cafesData || []);
+          // Transform the data to match the Cafe type
+          const transformedCafes: Cafe[] = cafesData?.map(cafe => ({
+            id: cafe.id,
+            title: cafe.title,
+            description: cafe.description,
+            rating: cafe.rating,
+            image: cafe.image_url, // Map image_url to image
+            address: cafe.address,
+            occupancy: cafe.occupancy,
+            price: cafe.price,
+            priceRange: cafe.price_range,
+            amenities: cafe.amenities,
+            tags: cafe.tags,
+            coordinates: {
+              lat: cafe.lat,
+              lng: cafe.lng
+            }
+          })) || [];
+
+          setSavedCafes(transformedCafes);
         }
       } catch (error) {
         console.error('Error fetching saved cafes:', error);
@@ -72,7 +91,7 @@ const SavedCafes = () => {
               title={cafe.title}
               description={cafe.description}
               rating={cafe.rating}
-              image={cafe.image_url}
+              image={cafe.image}
               address={cafe.address}
               amenities={cafe.amenities}
             />
