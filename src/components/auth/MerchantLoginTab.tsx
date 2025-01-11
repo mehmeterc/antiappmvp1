@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { AuthDivider } from "./AuthDivider";
 
 interface MerchantLoginTabProps {
   authError: string | null;
@@ -25,6 +26,7 @@ export const MerchantLoginTab = ({ authError }: MerchantLoginTabProps) => {
     setLoading(true);
 
     try {
+      console.log("Attempting merchant login with email:", email);
       const { data: { session }, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -36,7 +38,7 @@ export const MerchantLoginTab = ({ authError }: MerchantLoginTabProps) => {
         // Check if the user is a merchant
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('account_type')
+          .select('account_type, verification_status')
           .eq('id', session.user.id)
           .single();
 
@@ -46,6 +48,11 @@ export const MerchantLoginTab = ({ authError }: MerchantLoginTabProps) => {
           // If not a merchant, sign out and show error
           await supabase.auth.signOut();
           throw new Error('This account is not registered as a merchant. Please use the regular login.');
+        }
+
+        if (profile?.verification_status !== 'approved') {
+          await supabase.auth.signOut();
+          throw new Error('Your merchant account is pending approval. Please wait for admin verification.');
         }
 
         console.log("Merchant login successful");
@@ -120,6 +127,19 @@ export const MerchantLoginTab = ({ authError }: MerchantLoginTabProps) => {
           {loading ? "Signing in..." : "Sign in as Merchant"}
         </Button>
       </form>
+
+      <AuthDivider />
+
+      <div className="text-center">
+        <p className="text-sm text-gray-600 mb-4">Want to register as a merchant?</p>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => navigate("/merchant/signup")}
+        >
+          Register your Business
+        </Button>
+      </div>
     </>
   );
 };
