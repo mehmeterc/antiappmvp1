@@ -10,9 +10,9 @@ export const CheckInQRCode = ({ cafeId, price }: CheckInQRCodeProps) => {
   const location = useLocation();
   // Remove any trailing slashes and ensure clean URL formation
   const baseUrl = window.location.origin.replace(/\/$/, '');
-  const checkInUrl = `${baseUrl}/checkin-status/${cafeId}`;
+  const checkInUrl = `${baseUrl}/check-in/${cafeId}`;
   
-  console.log("Generated QR Code URL:", checkInUrl); // Debug log
+  console.log("Generated QR Code URL:", checkInUrl);
 
   return (
     <div className="flex flex-col items-center space-y-4 p-4 bg-white rounded-lg shadow-lg">

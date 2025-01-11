@@ -84,6 +84,11 @@ function App() {
               <Reviews />
             </ProtectedRoute>
           } />
+          <Route path="/check-in/:id" element={
+            <ProtectedRoute>
+              <CheckInStatus />
+            </ProtectedRoute>
+          } />
           
           {/* Merchant Routes */}
           <Route path="/merchant/dashboard" element={
@@ -106,11 +111,6 @@ function App() {
               <MerchantReviews />
             </ProtectedRoute>
           } />
-          <Route path="/merchant/preview" element={
-            <ProtectedRoute>
-              <MerchantProfile preview={true} />
-            </ProtectedRoute>
-          } />
           <Route path="/merchant/register" element={
             <ProtectedRoute>
               <MerchantRegistration />
@@ -121,11 +121,6 @@ function App() {
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/check-in/:id" element={
-            <ProtectedRoute>
-              <CheckInStatus />
             </ProtectedRoute>
           } />
           
