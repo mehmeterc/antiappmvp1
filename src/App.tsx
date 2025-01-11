@@ -19,6 +19,11 @@ import { Toaster } from "./components/ui/sonner";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useEffect } from "react";
 
+// Merchant Dashboard Pages
+import MerchantDashboard from "./pages/merchant/Dashboard";
+import MerchantPromotions from "./pages/merchant/Promotions";
+import MerchantReviews from "./pages/merchant/Reviews";
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   
@@ -79,9 +84,26 @@ function App() {
               <Reviews />
             </ProtectedRoute>
           } />
+          
+          {/* Merchant Routes */}
+          <Route path="/merchant/dashboard" element={
+            <ProtectedRoute>
+              <MerchantDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/merchant/profile" element={
             <ProtectedRoute>
               <MerchantProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchant/promotions" element={
+            <ProtectedRoute>
+              <MerchantPromotions />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchant/reviews" element={
+            <ProtectedRoute>
+              <MerchantReviews />
             </ProtectedRoute>
           } />
           <Route path="/merchant/preview" element={
@@ -94,6 +116,8 @@ function App() {
               <MerchantRegistration />
             </ProtectedRoute>
           } />
+          
+          {/* Admin Routes */}
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminDashboard />

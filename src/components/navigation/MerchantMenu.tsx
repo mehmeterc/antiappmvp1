@@ -39,7 +39,7 @@ export const MerchantMenu = ({ onClose }: MerchantMenuProps) => {
     { 
       label: "Reviews", 
       icon: <Star className="h-4 w-4" />, 
-      path: "/reviews" 
+      path: "/merchant/reviews" 
     },
     { 
       label: "About AntiApp", 
