@@ -20,15 +20,22 @@ const MerchantProfile = ({ preview = false }: MerchantProfileProps) => {
       try {
         if (!session?.user?.id) return;
 
+        console.log("Fetching merchant profile for ID:", session.user.id);
         const { data, error } = await supabase
           .from('merchant_profiles')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)  // Changed from user_id to id
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching merchant profile:", error);
+          throw error;
+        }
+        
+        console.log("Merchant profile fetched:", data);
         setProfile(data);
       } catch (err: any) {
+        console.error("Error in fetchProfile:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -72,24 +79,19 @@ const MerchantProfile = ({ preview = false }: MerchantProfileProps) => {
           </div>
           
           <div>
-            <h2 className="font-semibold">Business Address</h2>
-            <p>{profile.business_address}</p>
+            <h2 className="font-semibold">Business Description</h2>
+            <p>{profile.business_description || 'No description provided'}</p>
           </div>
           
           <div>
             <h2 className="font-semibold">Contact Information</h2>
-            <p>Phone: {profile.phone}</p>
-            <p>Email: {profile.email}</p>
+            <p>Email: {profile.contact_email}</p>
+            <p>Phone: {profile.contact_phone || 'Not provided'}</p>
           </div>
           
           <div>
-            <h2 className="font-semibold">Business Hours</h2>
-            <p>{profile.business_hours}</p>
-          </div>
-          
-          <div>
-            <h2 className="font-semibold">Description</h2>
-            <p>{profile.description}</p>
+            <h2 className="font-semibold">Website</h2>
+            <p>{profile.website || 'Not provided'}</p>
           </div>
           
           {!preview && (
