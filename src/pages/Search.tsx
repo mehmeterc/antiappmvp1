@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { SpaceCard } from "@/components/SpaceCard";
-import { BERLIN_CAFES } from "@/data/mockCafes";
 import { useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { calculateDistance } from "@/utils/searchUtils";
 import { Cafe } from "@/types/cafe";
 import { toast } from "sonner";
+import { BERLIN_CAFES } from "@/data/cafes/berlin";
 
 const Search = () => {
   const location = useLocation();
@@ -31,7 +31,14 @@ const Search = () => {
   }, []);
 
   useEffect(() => {
-    let filteredCafes = BERLIN_CAFES.filter(cafe => {
+    let filteredCafes = BERLIN_CAFES.map(cafe => ({
+      ...cafe,
+      image_url: cafe.image,
+      price_range: cafe.priceRange,
+      lat: cafe.coordinates.lat,
+      lng: cafe.coordinates.lng,
+      created_at: new Date().toISOString() // Adding required created_at field
+    })).filter(cafe => {
       const matchesSearch = searchTerm.length === 0 || 
         cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,8 +59,8 @@ const Search = () => {
         distance: calculateDistance(
           userLocation.lat,
           userLocation.lng,
-          cafe.coordinates.lat,
-          cafe.coordinates.lng
+          cafe.lat,
+          cafe.lng
         )
       })).sort((a, b) => (a.distance || 0) - (b.distance || 0));
     }
