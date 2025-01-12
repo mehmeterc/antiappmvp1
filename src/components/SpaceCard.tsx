@@ -7,6 +7,9 @@ import { Bookmark } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { AddressLink } from "./AddressLink";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SpaceCardProps {
   id: string;
@@ -21,32 +24,83 @@ interface SpaceCardProps {
 
 export const SpaceCard = ({ id, title, description, rating, image, address, amenities, isDetailed }: SpaceCardProps) => {
   const { toast } = useToast();
+  const session = useSession();
+  const queryClient = useQueryClient();
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
-    const isAlreadySaved = savedCafes.some((cafe: { id: string }) => cafe.id === id);
-    setIsSaved(isAlreadySaved);
-  }, [id]);
+    const checkIfSaved = async () => {
+      if (!session?.user?.id) return;
 
-  const handleSave = (e: React.MouseEvent) => {
+      const { data, error } = await supabase
+        .from('saved_cafes')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('cafe_id', id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking saved status:', error);
+      }
+
+      setIsSaved(!!data);
+    };
+
+    checkIfSaved();
+  }, [id, session?.user?.id]);
+
+  const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    setIsSaved(!isSaved);
-    
-    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
-    if (!isSaved) {
-      localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, image, address, amenities }]));
+
+    if (!session?.user?.id) {
       toast({
-        title: "Cafe saved!",
-        description: "Added to your saved spaces.",
+        title: "Please log in",
+        description: "You need to be logged in to save cafes.",
       });
-    } else {
-      localStorage.setItem('savedCafes', JSON.stringify(savedCafes.filter((cafe: { id: string }) => cafe.id !== id)));
+      return;
+    }
+
+    try {
+      if (!isSaved) {
+        const { error } = await supabase
+          .from('saved_cafes')
+          .insert({
+            user_id: session.user.id,
+            cafe_id: id
+          });
+
+        if (error) throw error;
+
+        setIsSaved(true);
+        toast({
+          title: "Cafe saved!",
+          description: "Added to your saved spaces.",
+        });
+      } else {
+        const { error } = await supabase
+          .from('saved_cafes')
+          .delete()
+          .eq('user_id', session.user.id)
+          .eq('cafe_id', id);
+
+        if (error) throw error;
+
+        setIsSaved(false);
+        toast({
+          title: "Cafe removed",
+          description: "Removed from your saved spaces.",
+        });
+      }
+
+      // Invalidate the saved cafes query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['savedCafes'] });
+    } catch (error) {
+      console.error('Error saving cafe:', error);
       toast({
-        title: "Cafe removed",
-        description: "Removed from your saved spaces.",
+        title: "Error",
+        description: "There was an error saving the cafe. Please try again.",
+        variant: "destructive",
       });
     }
   };
