@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Bookmark } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { AddressLink } from "./AddressLink";
-import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@supabase/auth-helpers-react";
 
 interface SpaceCardProps {
   id: string;
@@ -22,70 +20,34 @@ interface SpaceCardProps {
 }
 
 export const SpaceCard = ({ id, title, description, rating, image, address, amenities, isDetailed }: SpaceCardProps) => {
-  const session = useSession();
+  const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkIfSaved = async () => {
-      if (!session?.user?.id) return;
+    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
+    const isAlreadySaved = savedCafes.some((cafe: { id: string }) => cafe.id === id);
+    setIsSaved(isAlreadySaved);
+  }, [id]);
 
-      try {
-        const { data, error } = await supabase
-          .from('saved_cafes')
-          .select('id')
-          .eq('cafe_id', id)
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (error) throw error;
-        setIsSaved(!!data);
-      } catch (error) {
-        console.error('Error checking saved status:', error);
-      }
-    };
-
-    checkIfSaved();
-  }, [id, session?.user?.id]);
-
-  const handleSave = async (e: React.MouseEvent) => {
+  const handleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!session?.user?.id) {
-      toast.error("Please log in to save cafes");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      if (!isSaved) {
-        const { error } = await supabase
-          .from('saved_cafes')
-          .insert({
-            user_id: session.user.id,
-            cafe_id: id
-          });
-
-        if (error) throw error;
-        setIsSaved(true);
-        toast.success("Cafe saved!");
-      } else {
-        const { error } = await supabase
-          .from('saved_cafes')
-          .delete()
-          .eq('cafe_id', id)
-          .eq('user_id', session.user.id);
-
-        if (error) throw error;
-        setIsSaved(false);
-        toast.success("Cafe removed from saved spaces");
-      }
-    } catch (error) {
-      console.error('Error saving cafe:', error);
-      toast.error("Failed to update saved status");
-    } finally {
-      setLoading(false);
+    setIsSaved(!isSaved);
+    
+    const savedCafes = JSON.parse(localStorage.getItem('savedCafes') || '[]');
+    if (!isSaved) {
+      localStorage.setItem('savedCafes', JSON.stringify([...savedCafes, { id, title, description, rating, image, address, amenities }]));
+      toast({
+        title: "Cafe saved!",
+        description: "Added to your saved spaces.",
+      });
+    } else {
+      localStorage.setItem('savedCafes', JSON.stringify(savedCafes.filter((cafe: { id: string }) => cafe.id !== id)));
+      toast({
+        title: "Cafe removed",
+        description: "Removed from your saved spaces.",
+      });
     }
   };
 
@@ -110,7 +72,6 @@ export const SpaceCard = ({ id, title, description, rating, image, address, amen
               isSaved ? "text-[#0D9F6C] hover:text-[#0D9F6C]" : "text-gray-500 hover:text-gray-700"
             )}
             onClick={handleSave}
-            disabled={loading}
           >
             <Bookmark className={cn("h-5 w-5", isSaved ? "fill-current" : "fill-none")} />
           </Button>

@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
-import { Coffee, Menu, LogIn, Search } from "lucide-react";
+import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star, Settings } from "lucide-react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
   Sheet,
@@ -10,48 +10,78 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
-import { MerchantMenu } from "./navigation/MerchantMenu";
-import { UserMenu } from "./navigation/UserMenu";
 
 export const Navigation = () => {
   const navigate = useNavigate();
   const session = useSession();
   const supabase = useSupabaseClient();
   const [accountType, setAccountType] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    console.log("Navigation: Initializing auth and profile check");
-    
     const fetchAccountType = async () => {
       if (session?.user?.id) {
-        console.log("Navigation: Fetching profile for user:", session.user.id);
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('account_type')
-            .eq('id', session.user.id)
-            .single();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('account_type')
+          .eq('id', session.user.id)
+          .single();
 
-          if (error) {
-            console.error("Navigation: Profile fetch error:", error);
-          } else if (data) {
-            console.log("Navigation: Profile loaded, account type:", data.account_type);
-            setAccountType(data.account_type);
-          }
-        } catch (error) {
-          console.error("Navigation: Unexpected error:", error);
+        if (!error && data) {
+          setAccountType(data.account_type);
         }
-      } else {
-        setAccountType(null);
       }
-      setLoading(false);
     };
 
     fetchAccountType();
   }, [session, supabase]);
+
+  const menuItems = [
+    { label: "Profile", icon: <User className="h-4 w-4" />, path: "/profile" },
+    { label: "Saved Cafes", icon: <BookMarked className="h-4 w-4" />, path: "/saved" },
+    { label: "History", icon: <History className="h-4 w-4" />, path: "/history" },
+    { label: "Messages", icon: <MessageSquare className="h-4 w-4" />, path: "/messages" },
+    { label: "Reviews", icon: <Star className="h-4 w-4" />, path: "/reviews" },
+  ];
+
+  if (accountType === 'merchant') {
+    menuItems.push({ 
+      label: "Merchant Profile", 
+      icon: <Settings className="h-4 w-4" />, 
+      path: "/merchant/profile" 
+    });
+  }
+
+  if (accountType === 'admin') {
+    menuItems.push({ 
+      label: "Admin Dashboard", 
+      icon: <Settings className="h-4 w-4" />, 
+      path: "/admin" 
+    });
+  }
+
+  menuItems.push({ 
+    label: "About", 
+    icon: <Info className="h-4 w-4" />, 
+    path: "/about" 
+  });
+
+  const handleLogout = async () => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      await supabase.auth.signOut();
+      navigate('/login');
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error('Error during logout:', error);
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+      toast.success("Logged out successfully");
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-md py-4 z-50">
@@ -62,21 +92,17 @@ export const Navigation = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          {!loading && accountType !== 'merchant' && (
-            <Button
-              variant="ghost"
-              className="hidden md:flex items-center"
-              onClick={() => navigate("/search")}
-            >
-              <Search className="h-4 w-4 mr-2" />
-              Find Spaces
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            className="hidden md:flex items-center"
+            onClick={() => navigate("/search")}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Find Spaces
+          </Button>
 
-          {loading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-          ) : session ? (
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          {session ? (
+            <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
@@ -86,14 +112,30 @@ export const Navigation = () => {
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription>
-                    {accountType === 'merchant' ? 'Merchant Dashboard' : 'Navigate through AntiApp'}
+                    Navigate through AntiApp
                   </SheetDescription>
                 </SheetHeader>
-                {accountType === 'merchant' ? (
-                  <MerchantMenu onClose={() => setIsOpen(false)} />
-                ) : (
-                  <UserMenu onClose={() => setIsOpen(false)} />
-                )}
+                <div className="mt-4 space-y-4">
+                  {menuItems.map((item) => (
+                    <Button
+                      key={item.path}
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => navigate(item.path)}
+                    >
+                      {item.icon}
+                      <span className="ml-2">{item.label}</span>
+                    </Button>
+                  ))}
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start"
+                    onClick={handleLogout}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
               </SheetContent>
             </Sheet>
           ) : (

@@ -25,15 +25,18 @@ const Messages = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-4 h-[calc(100vh-200px)]">
-        <aside className={`col-span-12 ${selectedUser ? 'hidden md:block' : ''} md:col-span-4 border rounded-lg overflow-hidden bg-white`}>
+        <div className={`col-span-12 ${selectedUser ? 'hidden md:block' : ''} md:col-span-4 border rounded-lg overflow-hidden`}>
+          <div className="p-3 border-b bg-gray-50">
+            <h2 className="font-semibold text-sm">Messages</h2>
+          </div>
           <UserList
             currentUserId={session.user.id}
             onUserSelect={setSelectedUser}
             selectedUser={selectedUser}
           />
-        </aside>
+        </div>
 
-        <main className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col bg-white`}>
+        <div className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col`}>
           {selectedUser ? (
             <ChatInterface
               selectedUser={selectedUser}
@@ -46,7 +49,7 @@ const Messages = () => {
           ) : (
             <EmptyState />
           )}
-        </main>
+        </div>
       </div>
     </Layout>
   );

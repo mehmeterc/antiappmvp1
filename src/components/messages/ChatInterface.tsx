@@ -1,8 +1,18 @@
+import { useState } from "react";
+import { Message } from "@/types/message";
+import { Profile } from "@/types/profile";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { ChatProps } from "@/types/message";
+
+interface ChatInterfaceProps {
+  selectedUser: Profile;
+  messages: Message[];
+  senderProfile: Profile | null;
+  isLoading: boolean;
+  onBack: () => void;
+  onSendMessage: (content: string) => Promise<void>;
+}
 
 export const ChatInterface = ({
   selectedUser,
@@ -11,22 +21,22 @@ export const ChatInterface = ({
   isLoading,
   onBack,
   onSendMessage,
-}: ChatProps) => {
+}: ChatInterfaceProps) => {
   return (
     <>
-      <header className="p-4 border-b bg-gray-50 flex items-center justify-between">
+      <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="md:hidden"
-            onClick={onBack}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="font-medium">{selectedUser?.full_name || 'Anonymous'}</h2>
+          <p className="font-medium text-sm">{selectedUser.full_name || 'Anonymous'}</p>
         </div>
-      </header>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="md:hidden"
+          onClick={onBack}
+        >
+          Back
+        </Button>
+      </div>
 
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">

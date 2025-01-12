@@ -3,7 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-import { MessageInputProps } from "@/types/message";
+
+interface MessageInputProps {
+  onSendMessage: (content: string) => Promise<void>;
+  disabled?: boolean;
+}
 
 export const MessageInput = ({ onSendMessage, disabled }: MessageInputProps) => {
   const [message, setMessage] = useState("");
@@ -21,26 +25,27 @@ export const MessageInput = ({ onSendMessage, disabled }: MessageInputProps) => 
       console.log("Message sent successfully");
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please try again.");
+      toast.error("Unable to send your message. Please check your connection and try again.");
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t">
+    <form onSubmit={handleSubmit} className="p-2 border-t">
       <div className="flex gap-2">
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1"
+          className="text-sm"
           disabled={disabled || isSending}
         />
         <Button 
           type="submit" 
-          size="icon"
+          size="icon" 
           disabled={disabled || isSending || !message.trim()}
+          className="shrink-0"
         >
           <Send className="h-4 w-4" />
         </Button>

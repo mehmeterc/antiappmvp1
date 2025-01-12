@@ -426,10 +426,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_demo_accounts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       deactivate_expired_promotions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
