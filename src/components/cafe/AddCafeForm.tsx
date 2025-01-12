@@ -60,17 +60,20 @@ export const AddCafeForm = ({ onSuccess }: { onSuccess: () => void }) => {
         imageUrl = publicUrl;
       }
 
+      const cafeId = crypto.randomUUID();
       const { error } = await supabase.from('cafes').insert({
+        id: cafeId,
         title: formData.title,
         description: formData.description,
         address: formData.address,
         rating: parseFloat(formData.rating),
         image_url: imageUrl,
         price: formData.price,
+        price_range: formData.price,
         occupancy: formData.occupancy,
         amenities: selectedAmenities,
         tags: [],
-        lat: 0, // These would ideally come from geocoding the address
+        lat: 0,
         lng: 0,
       });
 

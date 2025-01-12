@@ -3,14 +3,14 @@ import { EuroIcon, Wifi, Plug, Coffee, Baby, Volume2, Phone, Users, Bed,
 import { Checkbox } from "./ui/checkbox";
 import { Slider } from "./ui/slider";
 
-interface FilterOption {
+export interface FilterOption {
   id: string;
   label: string;
   icon: React.ReactNode;
   category: 'amenities' | 'atmosphere' | 'services';
 }
 
-const FILTER_OPTIONS: FilterOption[] = [
+export const FILTER_OPTIONS: FilterOption[] = [
   // Amenities
   { id: "wifi", label: "High-Speed WiFi", icon: <Wifi className="w-4 h-4" />, category: 'amenities' },
   { id: "power", label: "Power Outlets", icon: <Plug className="w-4 h-4" />, category: 'amenities' },

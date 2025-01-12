@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Home, BookMarked, History, MessageSquare, PlusCircle } from "lucide-react";
+import { Home, BookMarked, History, MessageSquare, PlusCircle, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { AddCafeModal } from "./cafe/AddCafeModal";
