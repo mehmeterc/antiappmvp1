@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,6 +10,7 @@ import { Coffee } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,8 +25,9 @@ const Login = () => {
         }
         
         if (session) {
-          console.log("Active session found, redirecting to home");
-          navigate("/");
+          console.log("Active session found, redirecting");
+          const returnPath = location.state?.from || "/";
+          navigate(returnPath, { replace: true });
         }
       } catch (error) {
         console.error("Session check error:", error);
@@ -42,12 +44,12 @@ const Login = () => {
         console.log("User signed in successfully:", session?.user);
         setAuthError(null);
         toast.success("Successfully signed in!");
-        navigate("/");
+        const returnPath = location.state?.from || "/";
+        navigate(returnPath, { replace: true });
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
         setAuthError(null);
         toast.info("Signed out successfully");
-        navigate("/login");
       } else if (event === "PASSWORD_RECOVERY") {
         setAuthError(null);
         toast.info("Please check your email to reset your password");
@@ -62,7 +64,7 @@ const Login = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   const handleAuthError = (error: AuthError) => {
     console.error("Auth error:", error);
