@@ -4,9 +4,7 @@ import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Cafe } from "@/types/cafe";
 
-interface SpaceCardProps extends Cafe {
-  key?: string;
-}
+type SpaceCardProps = Cafe;
 
 export const SpaceCard = ({ id, title, description, rating, image_url, address, amenities, lat, lng, distance }: SpaceCardProps) => {
   return (

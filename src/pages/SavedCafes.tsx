@@ -35,19 +35,7 @@ const SavedCafes = () => {
       return [];
     }
 
-    return cafes.map(cafe => ({
-      id: cafe.id,
-      title: cafe.title,
-      description: cafe.description,
-      rating: cafe.rating,
-      image: cafe.image_url,
-      address: cafe.address,
-      amenities: cafe.amenities,
-      coordinates: {
-        lat: cafe.lat,
-        lng: cafe.lng
-      }
-    }));
+    return cafes;
   };
 
   const { data: savedCafes = [], isLoading } = useQuery({
@@ -76,13 +64,7 @@ const SavedCafes = () => {
           {savedCafes.map((cafe: Cafe) => (
             <SpaceCard 
               key={cafe.id}
-              id={cafe.id}
-              title={cafe.title}
-              description={cafe.description}
-              rating={cafe.rating}
-              image={cafe.image}
-              address={cafe.address}
-              amenities={cafe.amenities}
+              {...cafe}
             />
           ))}
         </div>
