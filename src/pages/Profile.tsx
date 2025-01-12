@@ -27,7 +27,7 @@ const Profile = () => {
     }
 
     getProfile();
-  }, [session]);
+  }, [session, navigate, supabase]);
 
   const getProfile = async () => {
     try {
@@ -45,9 +45,12 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
 
       if (data) {
         console.log("Profile data retrieved:", data);
@@ -110,7 +113,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="container max-w-4xl mx-auto px-4 py-8">
       <Card className="p-6 space-y-8">
         <div className="flex items-center gap-6">
           <ProfileAvatar 

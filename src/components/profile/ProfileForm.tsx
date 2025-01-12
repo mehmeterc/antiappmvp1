@@ -20,13 +20,14 @@ export const ProfileForm = ({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="full_name">Name</Label>
         <div className="relative">
           <span className="absolute left-3 top-3 text-gray-500">
             <User className="h-4 w-4" />
           </span>
           <Input
-            id="name"
+            id="full_name"
+            name="full_name"
             value={fullName}
             onChange={(e) => onFieldChange('full_name', e.target.value)}
             className="pl-10"
@@ -43,6 +44,7 @@ export const ProfileForm = ({
           </span>
           <Input
             id="email"
+            name="email"
             type="email"
             value={email}
             onChange={(e) => onFieldChange('email', e.target.value)}
@@ -53,13 +55,14 @@ export const ProfileForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="payment">Payment Method</Label>
+        <Label htmlFor="payment_method">Payment Method</Label>
         <div className="relative">
           <span className="absolute left-3 top-3 text-gray-500">
             <CreditCard className="h-4 w-4" />
           </span>
           <Input
-            id="payment"
+            id="payment_method"
+            name="payment_method"
             value={paymentMethod}
             onChange={(e) => onFieldChange('payment_method', e.target.value)}
             className="pl-10"
