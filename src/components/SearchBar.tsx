@@ -5,9 +5,9 @@ import { FilterOptions } from "./FilterOptions";
 import { SearchInput } from "./SearchInput";
 import { SearchControls } from "./SearchControls";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
-import { BERLIN_CAFES } from "@/data/mockCafes";
 import { searchCafes } from "@/utils/searchUtils";
 import { Cafe } from "@/types/cafe";
+import { supabase } from "@/integrations/supabase/client";
 
 export const SearchBar = () => {
   const navigate = useNavigate();
@@ -24,16 +24,26 @@ export const SearchBar = () => {
     console.log('Search term changed:', searchTerm);
     if (searchTerm.length > 0) {
       try {
-        const results = searchCafes(
-          BERLIN_CAFES,
-          searchTerm,
-          selectedFilters,
-          priceRange,
-          aiRecommendations
-        );
-        console.log('Updated suggestions:', results?.length ?? 0);
-        setSuggestions(results ?? []);
-        setShowSuggestions(true);
+        const fetchCafes = async () => {
+          const { data: cafes, error } = await supabase
+            .from('cafes')
+            .select('*');
+          
+          if (error) throw error;
+          
+          const results = searchCafes(
+            cafes as Cafe[],
+            searchTerm,
+            selectedFilters,
+            priceRange,
+            aiRecommendations
+          );
+          console.log('Updated suggestions:', results?.length ?? 0);
+          setSuggestions(results ?? []);
+          setShowSuggestions(true);
+        };
+        
+        fetchCafes();
       } catch (error) {
         console.error('Search error:', error);
         setSuggestions([]);

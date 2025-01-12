@@ -14,7 +14,7 @@ export const CafeHeader = ({ cafe, isSaved, onSave }: CafeHeaderProps) => {
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="relative h-96">
         <img
-          src={cafe.image}
+          src={cafe.image_url}
           alt={cafe.title}
           className="w-full h-full object-cover"
         />

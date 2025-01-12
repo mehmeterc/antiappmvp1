@@ -12,7 +12,7 @@ export const CAFES_MITTE: Cafe[] = Array.from({ length: 25 }, (_, i) => ({
     "Boutique workspace with artisanal coffee"
   ][Math.floor(Math.random() * 5)],
   rating: Number((4 + Math.random()).toFixed(1)),
-  image: [
+  image_url: [
     "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
     "https://images.unsplash.com/photo-1521017432531-fbd92d768814",
     "https://images.unsplash.com/photo-1497366216548-37526070297c",
@@ -21,7 +21,7 @@ export const CAFES_MITTE: Cafe[] = Array.from({ length: 25 }, (_, i) => ({
   address: `${["Auguststraße", "Torstraße", "Rosenthaler", "Münzstraße"][Math.floor(Math.random() * 4)]} ${Math.floor(Math.random() * 100)}, 10119 Berlin`,
   occupancy: ["Quiet", "Moderate", "Busy"][Math.floor(Math.random() * 3)],
   price: String(Math.floor(Math.random() * 12) + 1),
-  priceRange: ["budget", "moderate", "premium"][Math.floor(Math.random() * 3)],
+  price_range: ["budget", "moderate", "premium"][Math.floor(Math.random() * 3)],
   amenities: [
     ...new Set([
       "wifi",
@@ -39,9 +39,8 @@ export const CAFES_MITTE: Cafe[] = Array.from({ length: 25 }, (_, i) => ({
     ].sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 6) + 3))
   ],
   tags: ["specialty coffee", "workspace", "coworking"].sort(() => Math.random() - 0.5),
-  coordinates: {
-    lat: 52.52 + (Math.random() * 0.02),
-    lng: 13.39 + (Math.random() * 0.02)
-  },
+  lat: 52.52 + (Math.random() * 0.02),
+  lng: 13.39 + (Math.random() * 0.02),
+  created_at: new Date().toISOString(),
   reviews: []
 }));
