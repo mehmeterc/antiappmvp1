@@ -12,17 +12,16 @@ export interface Cafe {
   title: string;
   description: string;
   rating: number;
-  image: string;
+  image_url: string;
   address: string;
   occupancy: string;
   price: string;
-  priceRange: string;
+  price_range: string;
   amenities: string[];
   tags: string[];
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-  reviews?: Review[];  // Made optional with ?
-  distance?: number;   // Added distance property as optional
+  lat: number;
+  lng: number;
+  created_at: string;
+  distance?: number;
+  reviews?: Review[];
 }

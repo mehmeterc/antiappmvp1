@@ -22,7 +22,7 @@ const fetchCafes = async () => {
   }
 
   console.log('Fetched cafes:', data);
-  return data;
+  return data as Cafe[];
 };
 
 const Index = () => {
@@ -62,8 +62,8 @@ const Index = () => {
         distance: calculateDistance(
           userLocation.lat,
           userLocation.lng,
-          cafe.coordinates?.lat || cafe.lat,
-          cafe.coordinates?.lng || cafe.lng
+          cafe.lat,
+          cafe.lng
         )
       }));
 
@@ -127,7 +127,7 @@ const Index = () => {
                 <Card className="overflow-hidden border-none shadow-md">
                   <div className="relative h-32">
                     <img
-                      src={cafe.image_url || cafe.image}
+                      src={cafe.image_url}
                       alt={cafe.title}
                       className="w-full h-full object-cover"
                     />
@@ -171,7 +171,7 @@ const Index = () => {
                 <Card className="overflow-hidden h-full border-none shadow-md">
                   <div className="relative h-48">
                     <img
-                      src={cafe.image_url || cafe.image}
+                      src={cafe.image_url}
                       alt={cafe.title}
                       className="w-full h-full object-cover"
                     />
