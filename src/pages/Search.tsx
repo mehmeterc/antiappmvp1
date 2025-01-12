@@ -33,11 +33,11 @@ const Search = () => {
   useEffect(() => {
     let filteredCafes = BERLIN_CAFES.map(cafe => ({
       ...cafe,
-      image_url: cafe.image,
-      price_range: cafe.priceRange,
-      lat: cafe.coordinates.lat,
-      lng: cafe.coordinates.lng,
-      created_at: new Date().toISOString() // Adding required created_at field
+      image_url: cafe.image_url,
+      price_range: cafe.price_range,
+      lat: cafe.lat,
+      lng: cafe.lng,
+      created_at: cafe.created_at
     })).filter(cafe => {
       const matchesSearch = searchTerm.length === 0 || 
         cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
