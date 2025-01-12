@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { useSession } from "@supabase/auth-helpers-react";
 import { UserList } from "@/components/messages/UserList";
-import { ChatInterface } from "@/components/messages/ChatInterface";
+import { MessageContainer } from "@/components/messages/MessageContainer";
 import { EmptyState } from "@/components/messages/EmptyState";
 import { Profile } from "@/types/profile";
 import { useMessages } from "@/hooks/useMessages";
@@ -38,7 +38,7 @@ const Messages = () => {
 
         <div className={`col-span-12 ${!selectedUser ? 'hidden md:block' : ''} md:col-span-8 border rounded-lg flex flex-col`}>
           {selectedUser ? (
-            <ChatInterface
+            <MessageContainer
               selectedUser={selectedUser}
               messages={messages}
               senderProfile={senderProfile}
