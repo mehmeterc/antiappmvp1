@@ -1,5 +1,4 @@
 import { SearchBar } from "@/components/SearchBar";
-import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin } from "lucide-react";
@@ -8,10 +7,32 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Cafe } from "@/types/cafe";
 import { calculateDistance } from "@/utils/searchUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+const fetchCafes = async () => {
+  console.log('Fetching cafes from Supabase...');
+  const { data, error } = await supabase
+    .from('cafes')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching cafes:', error);
+    throw error;
+  }
+
+  console.log('Fetched cafes:', data);
+  return data;
+};
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>(BERLIN_CAFES);
+  const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>([]);
+
+  const { data: cafes, isLoading, error } = useQuery({
+    queryKey: ['cafes'],
+    queryFn: fetchCafes,
+  });
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -35,21 +56,23 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (userLocation) {
-      const cafesWithDistances = BERLIN_CAFES.map(cafe => ({
+    if (cafes && userLocation) {
+      const cafesWithDistances = cafes.map(cafe => ({
         ...cafe,
         distance: calculateDistance(
           userLocation.lat,
           userLocation.lng,
-          cafe.coordinates.lat,
-          cafe.coordinates.lng
+          cafe.coordinates?.lat || cafe.lat,
+          cafe.coordinates?.lng || cafe.lng
         )
       }));
 
       cafesWithDistances.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       setCafesWithDistance(cafesWithDistances);
+    } else if (cafes) {
+      setCafesWithDistance(cafes);
     }
-  }, [userLocation]);
+  }, [userLocation, cafes]);
 
   // Get top rated cafes for highlights
   const highlightedCafes = cafesWithDistance
@@ -58,6 +81,22 @@ const Index = () => {
 
   // Get all cafes for the main list
   const allCafes = cafesWithDistance.slice(0, 8);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading cafes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Error loading cafes:', error);
+    toast.error("Failed to load cafes. Please try again later.");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,7 +127,7 @@ const Index = () => {
                 <Card className="overflow-hidden border-none shadow-md">
                   <div className="relative h-32">
                     <img
-                      src={cafe.image}
+                      src={cafe.image_url || cafe.image}
                       alt={cafe.title}
                       className="w-full h-full object-cover"
                     />
@@ -132,7 +171,7 @@ const Index = () => {
                 <Card className="overflow-hidden h-full border-none shadow-md">
                   <div className="relative h-48">
                     <img
-                      src={cafe.image}
+                      src={cafe.image_url || cafe.image}
                       alt={cafe.title}
                       className="w-full h-full object-cover"
                     />
