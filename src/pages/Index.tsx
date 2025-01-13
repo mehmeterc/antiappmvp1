@@ -1,8 +1,5 @@
 import { SearchBar } from "@/components/SearchBar";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { SpaceCard } from "@/components/SpaceCard";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Cafe } from "@/types/cafe";
@@ -49,9 +46,6 @@ const Index = () => {
           toast.error("Could not get your location. Distances will not be shown.");
         }
       );
-    } else {
-      console.log("Geolocation not supported");
-      toast.error("Your browser doesn't support geolocation. Distances will not be shown.");
     }
   }, []);
 
@@ -74,14 +68,6 @@ const Index = () => {
     }
   }, [userLocation, cafes]);
 
-  // Get top rated cafes for highlights
-  const highlightedCafes = cafesWithDistance
-    .filter(cafe => cafe.rating >= 4.7)
-    .slice(0, 4);
-
-  // Get all cafes for the main list
-  const allCafes = cafesWithDistance.slice(0, 8);
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -97,6 +83,14 @@ const Index = () => {
     console.error('Error loading cafes:', error);
     toast.error("Failed to load cafes. Please try again later.");
   }
+
+  // Get top rated cafes for highlights
+  const highlightedCafes = cafesWithDistance
+    .filter(cafe => cafe.rating >= 4.7)
+    .slice(0, 4);
+
+  // Get all cafes for the main list
+  const allCafes = cafesWithDistance.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,97 +108,22 @@ const Index = () => {
       <div className="max-w-7xl mx-auto px-4 -mt-10 space-y-12 pb-16">
         <SearchBar />
 
-        {/* Highlights of the Week */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Highlights of the Week</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {highlightedCafes.map((cafe) => (
-              <Link 
-                key={cafe.id} 
-                to={`/cafe/${cafe.id}`}
-                className="group hover:opacity-95 transition-opacity"
-              >
-                <Card className="overflow-hidden border-none shadow-md">
-                  <div className="relative h-32">
-                    <img
-                      src={cafe.image_url}
-                      alt={cafe.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Star className="w-3 h-3" />
-                        {cafe.rating}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-medium text-sm truncate">{cafe.title}</h3>
-                    <div className="flex flex-col gap-1">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {cafe.address.split(',')[0]}
-                      </p>
-                      {cafe.distance && (
-                        <p className="text-xs text-muted-foreground">
-                          {cafe.distance} km away
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {highlightedCafes.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Highlights of the Week</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {highlightedCafes.map((cafe) => (
+                <SpaceCard key={cafe.id} {...cafe} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* All Available Spaces */}
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">Available Spaces</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allCafes.map((cafe) => (
-              <Link 
-                key={cafe.id} 
-                to={`/cafe/${cafe.id}`}
-                className="group hover:opacity-95 transition-opacity"
-              >
-                <Card className="overflow-hidden h-full border-none shadow-md">
-                  <div className="relative h-48">
-                    <img
-                      src={cafe.image_url}
-                      alt={cafe.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Star className="w-3 h-3" />
-                        {cafe.rating}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-lg">{cafe.title}</h3>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {cafe.address}
-                      </p>
-                      {cafe.distance && (
-                        <p className="text-sm text-muted-foreground">
-                          {cafe.distance} km away
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      {cafe.amenities.slice(0, 3).map((amenity) => (
-                        <Badge key={amenity} variant="outline">
-                          {amenity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+              <SpaceCard key={cafe.id} {...cafe} />
             ))}
           </div>
         </section>

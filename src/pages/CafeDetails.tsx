@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { BERLIN_CAFES } from "@/data/mockCafes";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import { Layout } from "@/components/Layout";
@@ -7,32 +6,22 @@ import { BookingForm } from "@/components/BookingForm";
 import { CheckInQRCode } from "@/components/CheckInQRCode";
 import { ReviewsManager } from "@/components/ReviewsManager";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CafeHeader } from "@/components/cafe/CafeHeader";
 import { CafeAmenities } from "@/components/cafe/CafeAmenities";
 import { CafeInfo } from "@/components/cafe/CafeInfo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSession } from "@supabase/auth-helpers-react";
+import { Cafe } from "@/types/cafe";
 
 const CafeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [cafe, setCafe] = useState<any>(null);
+  const session = useSession();
+  const [cafe, setCafe] = useState<Cafe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast: uiToast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Get the current user's ID when component mounts
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-    };
-    getCurrentUser();
-  }, []);
 
   useEffect(() => {
     const fetchCafeDetails = async () => {
@@ -40,60 +29,53 @@ const CafeDetails = () => {
         setLoading(true);
         console.log("Fetching cafe details for ID:", id);
 
-        // First try to fetch from Supabase
-        const { data: cafeData, error: supabaseError } = await supabase
+        const { data: cafeData, error } = await supabase
           .from('cafes')
           .select('*')
           .eq('id', id)
           .maybeSingle();
 
-        if (supabaseError) {
-          console.error("Supabase error:", supabaseError);
-          throw supabaseError;
+        if (error) {
+          console.error("Error fetching cafe:", error);
+          throw error;
         }
 
-        if (cafeData) {
-          console.log("Found cafe in Supabase:", cafeData);
-          setCafe(cafeData);
-        } else {
-          // Fallback to mock data if not found in Supabase
-          console.log("Falling back to mock data");
-          const mockCafe = BERLIN_CAFES.find(c => c.id === id);
-          if (!mockCafe) {
-            throw new Error("Cafe not found");
-          }
-          setCafe(mockCafe);
+        if (!cafeData) {
+          throw new Error("Cafe not found");
         }
 
-        // Check if cafe is saved for current user
-        if (userId) {
+        console.log("Found cafe:", cafeData);
+        setCafe(cafeData);
+
+        // Check if cafe is saved (only if user is logged in)
+        if (session?.user?.id) {
           const { data: savedCafe } = await supabase
             .from('saved_cafes')
             .select('*')
             .eq('cafe_id', id)
-            .eq('user_id', userId)
+            .eq('user_id', session.user.id)
             .maybeSingle();
           
           setIsSaved(!!savedCafe);
         }
 
       } catch (err) {
-        console.error("Error fetching cafe details:", err);
-        setError(err instanceof Error ? err.message : "Failed to load cafe details");
+        console.error("Error in fetchCafeDetails:", err);
         toast.error("Failed to load cafe details");
+        navigate('/');
       } finally {
         setLoading(false);
       }
     };
 
-    if (id && userId) {
+    if (id) {
       fetchCafeDetails();
     }
-  }, [id, userId]);
+  }, [id, session?.user?.id, navigate]);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!cafe || !userId) {
+    if (!session?.user?.id) {
       toast.error("Please log in to save cafes");
       return;
     }
@@ -104,32 +86,34 @@ const CafeDetails = () => {
           .from('saved_cafes')
           .insert({ 
             cafe_id: id,
-            user_id: userId 
+            user_id: session.user.id 
           });
 
         if (saveError) throw saveError;
-
         setIsSaved(true);
-        toast.success("Cafe saved successfully!");
+        toast.success("Cafe saved!");
       } else {
         const { error: deleteError } = await supabase
           .from('saved_cafes')
           .delete()
           .eq('cafe_id', id)
-          .eq('user_id', userId);
+          .eq('user_id', session.user.id);
 
         if (deleteError) throw deleteError;
-
         setIsSaved(false);
         toast.success("Cafe removed from saved list");
       }
     } catch (error) {
       console.error("Error saving cafe:", error);
-      toast.error("Failed to save cafe");
+      toast.error("Failed to update saved status");
     }
   };
 
   const handleDirectCheckIn = () => {
+    if (!session) {
+      toast.error("Please log in to check in");
+      return;
+    }
     if (id) {
       navigate(`/checkin-status/${id}`);
     }
@@ -145,25 +129,18 @@ const CafeDetails = () => {
     );
   }
 
-  if (error || !cafe) {
+  if (!cafe) {
     return (
       <Layout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {error || "Cafe not found"}
+            Cafe not found
           </h2>
-          <Button onClick={() => navigate(-1)}>Go Back</Button>
+          <Button onClick={() => navigate('/')}>Go Back</Button>
         </div>
       </Layout>
     );
   }
-
-  const getPricePerHour = (priceLevel: string) => {
-    const level = parseInt(priceLevel);
-    return level * 2;
-  };
-
-  const pricePerHour = getPricePerHour(cafe.price);
 
   return (
     <Layout>
@@ -173,7 +150,7 @@ const CafeDetails = () => {
 
           <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
             <CafeAmenities amenities={cafe.amenities} />
-            <CafeInfo cafe={cafe} pricePerHour={pricePerHour} />
+            <CafeInfo cafe={cafe} pricePerHour={parseFloat(cafe.price)} />
             <p className="text-gray-700">{cafe.description}</p>
           </div>
 
