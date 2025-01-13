@@ -8,8 +8,9 @@ interface CheckInQRCodeProps {
 
 export const CheckInQRCode = ({ cafeId, price }: CheckInQRCodeProps) => {
   const location = useLocation();
-  // Remove any trailing slashes and ensure clean URL formation
-  const baseUrl = window.location.origin.replace(/\/$/, '');
+  
+  // Get the current window location and ensure proper URL formatting
+  const baseUrl = window.location.origin.replace(/:\/$/, ''); // Remove any trailing :/ 
   const checkInUrl = `${baseUrl}/checkin-status/${cafeId}`;
   
   console.log("Generated QR Code URL:", checkInUrl); // Debug log
@@ -24,6 +25,7 @@ export const CheckInQRCode = ({ cafeId, price }: CheckInQRCodeProps) => {
         includeMargin={true}
       />
       <p className="text-sm text-gray-600">Scan this QR code with your phone camera to check in or out</p>
+      <p className="text-xs text-gray-500">Rate: {price}/hour</p>
     </div>
   );
 };
