@@ -15,70 +15,73 @@ const CheckInStatus = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
   const [cafe, setCafe] = useState<Cafe | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const getHourlyRate = (priceStr: string) => {
     const priceLevel = (priceStr.match(/€/g) || []).length;
     switch (priceLevel) {
-      case 1: return 5;  // Basic desk
-      case 2: return 10; // Premium desk
-      case 3: return 30; // Private space
-      default: return 5;
+      case 1: return 2;  // Budget-friendly
+      case 2: return 4;  // Mid-range
+      case 3: return 6;  // Premium
+      default: return 2;
     }
   };
 
   useEffect(() => {
     const fetchCafe = async () => {
-      if (!id) return;
+      try {
+        setLoading(true);
+        console.log("Fetching cafe details for ID:", id);
 
-      const { data, error } = await supabase
-        .from('cafes')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+        const { data: cafeData, error } = await supabase
+          .from('cafes')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
 
-      if (error) {
-        console.error("Error fetching cafe:", error);
+        if (error) {
+          console.error("Error fetching cafe:", error);
+          toast.error("Failed to load cafe details");
+          return;
+        }
+
+        if (!cafeData) {
+          console.error("Cafe not found:", id);
+          toast.error("Cafe not found");
+          return;
+        }
+
+        console.log("Found cafe:", cafeData);
+        setCafe(cafeData);
+
+        // Check if user is already checked in
+        if (session?.user?.id) {
+          const { data: activeBooking } = await supabase
+            .from('booking_history')
+            .select('*')
+            .eq('cafe_id', id)
+            .eq('user_id', session.user.id)
+            .eq('status', 'Active')
+            .maybeSingle();
+          
+          if (activeBooking) {
+            setCheckInTime(new Date(activeBooking.check_in_time));
+            setIsCheckedIn(true);
+            console.log("Found active booking:", activeBooking);
+          }
+        }
+
+      } catch (err) {
+        console.error("Error in fetchCafe:", err);
         toast.error("Failed to load cafe details");
-        return;
-      }
-
-      if (!data) {
-        toast.error("Cafe not found");
-        return;
-      }
-
-      console.log("Fetched cafe for check-in:", data);
-      setCafe(data);
-    };
-
-    fetchCafe();
-  }, [id]);
-
-  useEffect(() => {
-    if (!session?.user?.id || !id) return;
-
-    const fetchActiveBooking = async () => {
-      const { data, error } = await supabase
-        .from('booking_history')
-        .select('*')
-        .eq('cafe_id', id)
-        .eq('user_id', session.user.id)
-        .eq('status', 'Active')
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error fetching booking:", error);
-        return;
-      }
-
-      if (data) {
-        setCheckInTime(new Date(data.check_in_time));
-        setIsCheckedIn(true);
-        console.log("Found active booking:", data);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchActiveBooking();
+    if (id) {
+      fetchCafe();
+    }
   }, [id, session?.user?.id]);
 
   useEffect(() => {
@@ -150,12 +153,23 @@ const CheckInStatus = () => {
     }
   };
 
-  if (!cafe) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading cafe details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cafe) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Cafe not found</h2>
+          <p className="text-gray-600">The cafe you're looking for doesn't exist or has been removed.</p>
         </div>
       </div>
     );
@@ -172,6 +186,9 @@ const CheckInStatus = () => {
               Status: <span className={isCheckedIn ? "text-green-600" : "text-gray-600"}>
                 {isCheckedIn ? "Checked In" : "Not Checked In"}
               </span>
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              Rate: {getHourlyRate(cafe.price)}€/hour
             </p>
           </div>
 
