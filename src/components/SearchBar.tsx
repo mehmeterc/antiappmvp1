@@ -5,9 +5,9 @@ import { FilterOptions } from "./FilterOptions";
 import { SearchInput } from "./SearchInput";
 import { SearchControls } from "./SearchControls";
 import { useAIRecommendations } from "@/hooks/useAIRecommendations";
-import { searchCafes } from "@/utils/searchUtils";
 import { Cafe } from "@/types/cafe";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const SearchBar = () => {
   const navigate = useNavigate();
@@ -17,43 +17,67 @@ export const SearchBar = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 12]);
   const [suggestions, setSuggestions] = useState<Cafe[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const { aiRecommendations = [], isLoading } = useAIRecommendations(searchTerm);
+  const { aiRecommendations = [], isLoading: isAILoading } = useAIRecommendations(searchTerm);
 
   useEffect(() => {
     console.log('Search term changed:', searchTerm);
-    if (searchTerm.length > 0) {
-      try {
-        const fetchCafes = async () => {
-          const { data: cafes, error } = await supabase
-            .from('cafes')
-            .select('*');
-          
-          if (error) throw error;
-          
-          const results = searchCafes(
-            cafes as Cafe[],
-            searchTerm,
-            selectedFilters,
-            priceRange,
-            aiRecommendations
-          );
-          console.log('Updated suggestions:', results?.length ?? 0);
-          setSuggestions(results ?? []);
-          setShowSuggestions(true);
-        };
-        
-        fetchCafes();
-      } catch (error) {
-        console.error('Search error:', error);
+    const fetchCafes = async () => {
+      if (searchTerm.length === 0 && selectedFilters.length === 0) {
         setSuggestions([]);
         setShowSuggestions(false);
+        return;
       }
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  }, [searchTerm, selectedFilters, priceRange, aiRecommendations]);
+
+      setIsLoading(true);
+      try {
+        let query = supabase
+          .from('cafes')
+          .select('*');
+
+        // Apply text search if there's a search term
+        if (searchTerm.length > 0) {
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+        }
+
+        // Apply amenities filter
+        if (selectedFilters.length > 0) {
+          query = query.contains('amenities', selectedFilters);
+        }
+
+        // Apply price range filter
+        const minPrice = priceRange[0].toString();
+        const maxPrice = priceRange[1].toString();
+        query = query.gte('price', minPrice).lte('price', maxPrice);
+
+        const { data: cafes, error } = await query;
+        
+        if (error) {
+          console.error('Search error:', error);
+          toast.error("Error fetching cafes. Please try again.");
+          setSuggestions([]);
+          setShowSuggestions(false);
+          return;
+        }
+        
+        console.log('Updated suggestions:', cafes?.length ?? 0);
+        setSuggestions(cafes ?? []);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Search error:', error);
+        toast.error("An unexpected error occurred. Please try again.");
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Debounce the search to avoid too many requests
+    const timeoutId = setTimeout(fetchCafes, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, selectedFilters, priceRange]);
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilters(prev => 
@@ -90,7 +114,7 @@ export const SearchBar = () => {
             suggestions={suggestions}
             aiRecommendations={aiRecommendations}
             onCafeSelect={handleCafeSelect}
-            isLoading={isLoading}
+            isLoading={isLoading || isAILoading}
           />
         </div>
         <SearchControls

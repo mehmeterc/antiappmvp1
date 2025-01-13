@@ -1,6 +1,7 @@
 import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
+import { Loader2 } from "lucide-react";
 
 interface SearchInputProps {
   searchTerm: string;
@@ -28,16 +29,23 @@ export const SearchInput = ({
       className="rounded-lg border shadow-md"
       shouldFilter={false}
     >
-      <CommandInput
-        placeholder={isLoading ? "AI is analyzing your search..." : "Search for spaces near you..."}
-        value={searchTerm}
-        onValueChange={onSearchTermChange}
-      />
-      <CommandList>
-        {searchTerm.length > 0 && suggestions.length === 0 && (
-          <CommandEmpty>No results found.</CommandEmpty>
+      <div className="flex items-center px-3">
+        <CommandInput
+          placeholder={isLoading ? "Searching..." : "Search for spaces near you..."}
+          value={searchTerm}
+          onValueChange={onSearchTermChange}
+          className="flex-1"
+          disabled={isLoading}
+        />
+        {isLoading && (
+          <Loader2 className="h-4 w-4 animate-spin text-gray-500 ml-2" />
         )}
-        {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && searchTerm.length > 0 && (
+      </div>
+      <CommandList>
+        {searchTerm.length > 0 && suggestions.length === 0 && !isLoading && (
+          <CommandEmpty>No spaces found matching your criteria.</CommandEmpty>
+        )}
+        {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && (
           <SearchResults
             suggestions={suggestions}
             aiRecommendations={aiRecommendations}
