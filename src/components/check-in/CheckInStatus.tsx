@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import { CheckInTimer } from "./CheckInTimer";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cafe } from "@/types/cafe";
 
-const CheckInStatus = () => {
-  const { id } = useParams();
+interface CheckInStatusProps {
+  cafeId: string;
+}
+
+const CheckInStatus = ({ cafeId }: CheckInStatusProps) => {
   const session = useSession();
+  const navigate = useNavigate();
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -31,23 +36,25 @@ const CheckInStatus = () => {
     const fetchCafe = async () => {
       try {
         setLoading(true);
-        console.log("Fetching cafe details for ID:", id);
+        console.log("Fetching cafe details for ID:", cafeId);
 
         const { data: cafeData, error } = await supabase
           .from('cafes')
           .select('*')
-          .eq('id', id)
+          .eq('id', cafeId)
           .maybeSingle();
 
         if (error) {
           console.error("Error fetching cafe:", error);
           toast.error("Failed to load cafe details");
+          navigate('/');
           return;
         }
 
         if (!cafeData) {
-          console.error("Cafe not found:", id);
+          console.error("Cafe not found:", cafeId);
           toast.error("Cafe not found");
+          navigate('/');
           return;
         }
 
@@ -59,7 +66,7 @@ const CheckInStatus = () => {
           const { data: activeBooking } = await supabase
             .from('booking_history')
             .select('*')
-            .eq('cafe_id', id)
+            .eq('cafe_id', cafeId)
             .eq('user_id', session.user.id)
             .eq('status', 'Active')
             .maybeSingle();
@@ -74,15 +81,16 @@ const CheckInStatus = () => {
       } catch (err) {
         console.error("Error in fetchCafe:", err);
         toast.error("Failed to load cafe details");
+        navigate('/');
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
+    if (cafeId) {
       fetchCafe();
     }
-  }, [id, session?.user?.id]);
+  }, [cafeId, session?.user?.id, navigate]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -114,7 +122,7 @@ const CheckInStatus = () => {
         .from('booking_history')
         .insert({
           user_id: session.user.id,
-          cafe_id: id,
+          cafe_id: cafeId,
           cafe_name: cafe.title,
           check_in_time: now.toISOString(),
           status: 'Active'
@@ -137,7 +145,7 @@ const CheckInStatus = () => {
           status: 'Completed',
           total_cost: Number(totalCost.toFixed(2))
         })
-        .eq('cafe_id', id)
+        .eq('cafe_id', cafeId)
         .eq('user_id', session.user.id)
         .eq('status', 'Active');
 
