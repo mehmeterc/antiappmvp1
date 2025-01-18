@@ -24,55 +24,23 @@ export const SearchBar = () => {
   useEffect(() => {
     console.log('Search term changed:', searchTerm);
     const fetchCafes = async () => {
-      if (searchTerm.length === 0) {
-        // Show all cafes when no search term
-        try {
-          let query = supabase.from('cafes').select('*');
-          
-          // Apply amenities filter if selected
-          if (selectedFilters.length > 0) {
-            query = query.contains('amenities', selectedFilters);
-          }
-
-          // Apply price range filter
-          query = query.gte('price', priceRange[0].toString())
-                      .lte('price', priceRange[1].toString());
-
-          const { data: cafes, error } = await query;
-          
-          if (error) {
-            console.error('Search error:', error);
-            toast.error("Error fetching cafes");
-            return;
-          }
-          
-          console.log('Fetched cafes:', cafes?.length ?? 0);
-          setSuggestions(cafes ?? []);
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error('Search error:', error);
-          toast.error("An unexpected error occurred");
-        } finally {
-          setIsLoading(false);
-        }
-        return;
-      }
-
       setIsLoading(true);
       try {
-        let query = supabase
-          .from('cafes')
-          .select('*')
-          .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+        let query = supabase.from('cafes').select('*');
 
-        // Apply amenities filter
+        // Apply text search if there's a search term
+        if (searchTerm.length > 0) {
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+        }
+        
+        // Apply amenities filter if selected
         if (selectedFilters.length > 0) {
           query = query.contains('amenities', selectedFilters);
         }
 
-        // Apply price range filter
-        query = query.gte('price', priceRange[0].toString())
-                    .lte('price', priceRange[1].toString());
+        // Apply price range filter - convert price to numeric for comparison
+        query = query.gte('price', `${priceRange[0]}`)
+                    .lte('price', `${priceRange[1]}`);
 
         const { data: cafes, error } = await query;
         
@@ -84,7 +52,7 @@ export const SearchBar = () => {
           return;
         }
         
-        console.log('Updated suggestions:', cafes?.length ?? 0);
+        console.log('Fetched cafes:', cafes?.length ?? 0);
         setSuggestions(cafes ?? []);
         setShowSuggestions(true);
       } catch (error) {
