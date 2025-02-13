@@ -39,25 +39,33 @@ export const SearchBar = () => {
 
   const { aiRecommendations = [], isLoading: isAILoading } = useAIRecommendations(searchTerm);
 
-  // Memoized filtering logic
+  // Improved filtering logic
   const filteredSuggestions = useMemo(() => {
     if (!allCafes.length) return [];
+    if (!searchTerm && selectedFilters.length === 0) return allCafes;
 
+    const searchTermLower = searchTerm.toLowerCase();
+    
     return allCafes.filter(cafe => {
-      // Apply text search if there's a search term
+      // Search term matching
       const matchesSearch = !searchTerm || 
-        cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.amenities.some(amenity => 
-          amenity.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        cafe.title.toLowerCase().includes(searchTermLower) ||
+        cafe.description.toLowerCase().includes(searchTermLower) ||
+        cafe.address.toLowerCase().includes(searchTermLower) ||
+        (cafe.amenities && cafe.amenities.some(amenity => 
+          amenity.toLowerCase().includes(searchTermLower)
+        )) ||
+        (cafe.tags && cafe.tags.some(tag => 
+          tag.toLowerCase().includes(searchTermLower)
+        ));
 
-      // Apply amenities filter if selected
+      // Filter matching
       const matchesFilters = selectedFilters.length === 0 ||
-        selectedFilters.every(filter => cafe.amenities.includes(filter));
+        (cafe.amenities && selectedFilters.every(filter => 
+          cafe.amenities.includes(filter)
+        ));
 
-      // Apply price range filter
+      // Price range matching
       const cafePrice = parseFloat(cafe.price);
       const matchesPrice = !isNaN(cafePrice) &&
         cafePrice >= priceRange[0] &&
@@ -67,14 +75,9 @@ export const SearchBar = () => {
     });
   }, [allCafes, searchTerm, selectedFilters, priceRange]);
 
-  // Show suggestions whenever there's a search term or filters are active
+  // Show suggestions as soon as we have data or search term
   useEffect(() => {
-    setShowSuggestions(
-      searchTerm.length > 0 || 
-      selectedFilters.length > 0 || 
-      priceRange[0] !== 0 || 
-      priceRange[1] !== 12
-    );
+    setShowSuggestions(true);
   }, [searchTerm, selectedFilters, priceRange]);
 
   const handleFilterChange = (filterId: string) => {
@@ -100,6 +103,13 @@ export const SearchBar = () => {
       }
     });
   };
+
+  // Log for debugging
+  console.log('Current suggestions:', {
+    searchTerm,
+    suggestionsCount: filteredSuggestions.length,
+    suggestions: filteredSuggestions.map(s => s.title)
+  });
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
