@@ -107,7 +107,7 @@ export type Database = {
         }
         Insert: {
           address: string
-          amenities: string[]
+          amenities?: string[]
           created_at?: string
           description: string
           id: string
@@ -115,7 +115,7 @@ export type Database = {
           lat: number
           lng: number
           occupancy: string
-          price: string
+          price?: string
           price_range: string
           rating: number
           tags: string[]
