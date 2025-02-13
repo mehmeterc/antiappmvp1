@@ -1,3 +1,5 @@
+
+import { memo } from "react";
 import { CommandGroup, CommandItem } from "./ui/command";
 import { Cafe } from "@/types/cafe";
 
@@ -7,7 +9,7 @@ interface SearchResultsProps {
   onCafeSelect: (cafeId: string) => void;
 }
 
-export const SearchResults = ({
+export const SearchResults = memo(({
   suggestions,
   aiRecommendations,
   onCafeSelect,
@@ -16,7 +18,7 @@ export const SearchResults = ({
     <>
       {suggestions.length > 0 && (
         <CommandGroup heading="Spaces">
-          {suggestions.map((cafe) => (
+          {suggestions.slice(0, 8).map((cafe) => (
             <CommandItem
               key={cafe.id}
               value={cafe.title}
@@ -29,9 +31,15 @@ export const SearchResults = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">★ {cafe.rating}</span>
+                {cafe.price && <span className="text-xs text-gray-500">{cafe.price}</span>}
               </div>
             </CommandItem>
           ))}
+          {suggestions.length > 8 && (
+            <CommandItem className="text-sm text-gray-500 italic">
+              + {suggestions.length - 8} more results...
+            </CommandItem>
+          )}
         </CommandGroup>
       )}
 
@@ -46,4 +54,6 @@ export const SearchResults = ({
       )}
     </>
   );
-};
+});
+
+SearchResults.displayName = "SearchResults";

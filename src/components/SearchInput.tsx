@@ -1,3 +1,4 @@
+
 import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
@@ -22,8 +23,6 @@ export const SearchInput = ({
   onCafeSelect,
   isLoading = false,
 }: SearchInputProps) => {
-  console.log('SearchInput render - suggestions:', suggestions?.length ?? 0);
-  
   return (
     <Command 
       className="rounded-lg border shadow-md"
@@ -31,21 +30,20 @@ export const SearchInput = ({
     >
       <div className="flex items-center px-3">
         <CommandInput
-          placeholder={isLoading ? "Searching..." : "Search for spaces near you..."}
+          placeholder={isLoading ? "Loading suggestions..." : "Search for spaces near you..."}
           value={searchTerm}
           onValueChange={onSearchTermChange}
           className="flex-1"
-          disabled={isLoading}
         />
         {isLoading && (
           <Loader2 className="h-4 w-4 animate-spin text-gray-500 ml-2" />
         )}
       </div>
       <CommandList>
-        {searchTerm.length > 0 && suggestions.length === 0 && !isLoading && (
+        {!isLoading && searchTerm && suggestions.length === 0 && (
           <CommandEmpty>No spaces found matching your criteria.</CommandEmpty>
         )}
-        {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && (
+        {showSuggestions && suggestions.length > 0 && (
           <SearchResults
             suggestions={suggestions}
             aiRecommendations={aiRecommendations}
