@@ -87,7 +87,7 @@ const Index = () => {
           <h1 className="text-4xl md:text-6xl font-bold">
             Find Your Perfect Third Place
           </h1>
-          <p className="text-xl md:text-2xl opacity-90">Discover cafes, libraries, and community spaces perfect for 
+          <p className="text-xl md:text-2xl opacity-90 mx-0">Discover cafes, libraries, and community spaces perfect for 
 remote work and connection.</p>
         </div>
       </div>
