@@ -1,3 +1,4 @@
+
 import { SearchBar } from "@/components/SearchBar";
 import { SpaceCard } from "@/components/SpaceCard";
 import { useEffect, useState } from "react";
@@ -7,28 +8,51 @@ import { calculateDistance } from "@/utils/searchUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchCafes = async () => {
-  console.log('Fetching cafes from Supabase...');
+const fetchTopCafes = async () => {
+  console.log('Fetching top cafes from Supabase...');
   const { data, error } = await supabase
     .from('cafes')
-    .select('*');
+    .select('*')
+    .order('rating', { ascending: false })
+    .limit(4);
 
   if (error) {
-    console.error('Error fetching cafes:', error);
+    console.error('Error fetching top cafes:', error);
     throw error;
   }
 
-  console.log('Fetched cafes:', data);
+  console.log('Fetched top cafes:', data);
+  return data as Cafe[];
+};
+
+const fetchRecentCafes = async () => {
+  console.log('Fetching recent cafes from Supabase...');
+  const { data, error } = await supabase
+    .from('cafes')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error('Error fetching recent cafes:', error);
+    throw error;
+  }
+
+  console.log('Fetched recent cafes:', data);
   return data as Cafe[];
 };
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>([]);
 
-  const { data: cafes, isLoading, error } = useQuery({
-    queryKey: ['cafes'],
-    queryFn: fetchCafes,
+  const { data: highlightedCafes = [], isLoading: isLoadingHighlights } = useQuery({
+    queryKey: ['cafes', 'highlights'],
+    queryFn: fetchTopCafes,
+  });
+
+  const { data: allCafes = [], isLoading: isLoadingAll } = useQuery({
+    queryKey: ['cafes', 'recent'],
+    queryFn: fetchRecentCafes,
   });
 
   useEffect(() => {
@@ -49,48 +73,23 @@ const Index = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (cafes && userLocation) {
-      const cafesWithDistances = cafes.map(cafe => ({
-        ...cafe,
-        distance: calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          cafe.lat,
-          cafe.lng
-        )
-      }));
+  const cafesWithDistance = allCafes.map(cafe => ({
+    ...cafe,
+    distance: userLocation 
+      ? calculateDistance(userLocation.lat, userLocation.lng, cafe.lat, cafe.lng)
+      : undefined
+  }));
 
-      cafesWithDistances.sort((a, b) => (a.distance || 0) - (b.distance || 0));
-      setCafesWithDistance(cafesWithDistances);
-    } else if (cafes) {
-      setCafesWithDistance(cafes);
-    }
-  }, [userLocation, cafes]);
-
-  if (isLoading) {
+  if (isLoadingHighlights || isLoadingAll) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading cafes...</p>
+          <p className="mt-4 text-gray-600">Loading spaces...</p>
         </div>
       </div>
     );
   }
-
-  if (error) {
-    console.error('Error loading cafes:', error);
-    toast.error("Failed to load cafes. Please try again later.");
-  }
-
-  // Get top rated cafes for highlights
-  const highlightedCafes = cafesWithDistance
-    .filter(cafe => cafe.rating >= 4.7)
-    .slice(0, 4);
-
-  // Get all cafes for the main list
-  const allCafes = cafesWithDistance.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -111,7 +110,7 @@ const Index = () => {
         {highlightedCafes.length > 0 && (
           <section className="space-y-4">
             <h2 className="text-2xl font-bold">Highlights of the Week</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {highlightedCafes.map((cafe) => (
                 <SpaceCard key={cafe.id} {...cafe} />
               ))}
@@ -122,7 +121,7 @@ const Index = () => {
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">Available Spaces</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allCafes.map((cafe) => (
+            {cafesWithDistance.map((cafe) => (
               <SpaceCard key={cafe.id} {...cafe} />
             ))}
           </div>
