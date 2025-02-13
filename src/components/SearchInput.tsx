@@ -43,7 +43,7 @@ export const SearchInput = ({
         {!isLoading && searchTerm && suggestions.length === 0 && (
           <CommandEmpty>No spaces found matching your criteria.</CommandEmpty>
         )}
-        {showSuggestions && suggestions.length > 0 && (
+        {showSuggestions && (
           <SearchResults
             suggestions={suggestions}
             aiRecommendations={aiRecommendations}

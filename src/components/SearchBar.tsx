@@ -17,7 +17,10 @@ const fetchAllCafes = async () => {
     .select('*')
     .order('rating', { ascending: false });
   
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching cafes:', error);
+    throw error;
+  }
   return cafes;
 };
 
@@ -25,60 +28,42 @@ export const SearchBar = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true); // Always show by default
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 12]);
 
-  // Cache all cafes with react-query
+  // Fetch and cache all cafes
   const { data: allCafes = [], isLoading: isCafesLoading } = useQuery({
     queryKey: ['cafes'],
     queryFn: fetchAllCafes,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    gcTime: 30 * 60 * 1000,   // Keep in garbage collection for 30 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   const { aiRecommendations = [], isLoading: isAILoading } = useAIRecommendations(searchTerm);
 
-  // Improved filtering logic
+  // Simple, direct filtering logic
   const filteredSuggestions = useMemo(() => {
-    if (!allCafes.length) return [];
-    if (!searchTerm && selectedFilters.length === 0) return allCafes;
-
-    const searchTermLower = searchTerm.toLowerCase();
+    if (!allCafes) return [];
     
+    // If no search term, show all cafes
+    if (!searchTerm.trim()) {
+      return allCafes;
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Simple text matching against all relevant fields
     return allCafes.filter(cafe => {
-      // Search term matching
-      const matchesSearch = !searchTerm || 
-        cafe.title.toLowerCase().includes(searchTermLower) ||
-        cafe.description.toLowerCase().includes(searchTermLower) ||
-        cafe.address.toLowerCase().includes(searchTermLower) ||
-        (cafe.amenities && cafe.amenities.some(amenity => 
-          amenity.toLowerCase().includes(searchTermLower)
-        )) ||
-        (cafe.tags && cafe.tags.some(tag => 
-          tag.toLowerCase().includes(searchTermLower)
-        ));
-
-      // Filter matching
-      const matchesFilters = selectedFilters.length === 0 ||
-        (cafe.amenities && selectedFilters.every(filter => 
-          cafe.amenities.includes(filter)
-        ));
-
-      // Price range matching
-      const cafePrice = parseFloat(cafe.price);
-      const matchesPrice = !isNaN(cafePrice) &&
-        cafePrice >= priceRange[0] &&
-        cafePrice <= priceRange[1];
-
-      return matchesSearch && matchesFilters && matchesPrice;
+      return (
+        cafe.title.toLowerCase().includes(searchLower) ||
+        cafe.description.toLowerCase().includes(searchLower) ||
+        cafe.address.toLowerCase().includes(searchLower) ||
+        cafe.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
+        cafe.amenities.some(amenity => amenity.toLowerCase().includes(searchLower))
+      );
     });
-  }, [allCafes, searchTerm, selectedFilters, priceRange]);
-
-  // Show suggestions as soon as we have data or search term
-  useEffect(() => {
-    setShowSuggestions(true);
-  }, [searchTerm, selectedFilters, priceRange]);
+  }, [allCafes, searchTerm]);
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilters(prev => 
@@ -104,7 +89,7 @@ export const SearchBar = () => {
     });
   };
 
-  // Log for debugging
+  // Debug logging
   console.log('Current suggestions:', {
     searchTerm,
     suggestionsCount: filteredSuggestions.length,
