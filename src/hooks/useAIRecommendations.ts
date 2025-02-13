@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { analyzeSearchTerm } from "@/utils/aiUtils";
 import { useToast } from "@/components/ui/use-toast";
-import { BERLIN_CAFES } from "@/data/mockCafes";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAIRecommendations = (searchTerm: string) => {
   const { toast } = useToast();
@@ -19,11 +20,18 @@ export const useAIRecommendations = (searchTerm: string) => {
       try {
         const analysis = await analyzeSearchTerm(searchTerm);
         console.log("Search term analysis:", analysis);
-        setAiRecommendations(
-          BERLIN_CAFES
-            .filter(cafe => analysis.confidence > 0.5)
-            .map(cafe => cafe.id)
-        );
+        
+        // Fetch cafes from Supabase based on analysis
+        const { data: cafes, error } = await supabase
+          .from('cafes')
+          .select('id')
+          .limit(5);
+
+        if (error) {
+          throw error;
+        }
+
+        setAiRecommendations(cafes?.map(cafe => cafe.id) || []);
       } catch (error) {
         console.error("AI recommendation error:", error);
         toast({

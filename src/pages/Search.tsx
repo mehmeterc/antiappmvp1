@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { SpaceCard } from "@/components/SpaceCard";
 import { useLocation } from "react-router-dom";
@@ -5,13 +6,44 @@ import { Layout } from "@/components/Layout";
 import { calculateDistance } from "@/utils/searchUtils";
 import { Cafe } from "@/types/cafe";
 import { toast } from "sonner";
-import { BERLIN_CAFES } from "@/data/cafes/berlin";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Search = () => {
   const location = useLocation();
   const { filters = [], searchTerm = "", priceRange = [0, 12] } = location.state || {};
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [cafesWithDistance, setCafesWithDistance] = useState<Cafe[]>([]);
+
+  const { data: cafes = [], isLoading } = useQuery({
+    queryKey: ['search', searchTerm, filters, priceRange],
+    queryFn: async () => {
+      let query = supabase.from('cafes').select('*');
+
+      // Apply text search if there's a search term
+      if (searchTerm.length > 0) {
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+      }
+      
+      // Apply amenities filter if selected
+      if (filters.length > 0) {
+        query = query.contains('amenities', filters);
+      }
+
+      // Apply price range filter
+      query = query.gte('price', priceRange[0].toString())
+                  .lte('price', priceRange[1].toString());
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Search error:', error);
+        toast.error("Error fetching cafes");
+        return [];
+      }
+      
+      return data as Cafe[];
+    },
+  });
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -30,43 +62,22 @@ const Search = () => {
     }
   }, []);
 
-  useEffect(() => {
-    let filteredCafes = BERLIN_CAFES.map(cafe => ({
-      ...cafe,
-      image_url: cafe.image_url,
-      price_range: cafe.price_range,
-      lat: cafe.lat,
-      lng: cafe.lng,
-      created_at: cafe.created_at
-    })).filter(cafe => {
-      const matchesSearch = searchTerm.length === 0 || 
-        cafe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cafe.address.toLowerCase().includes(searchTerm.toLowerCase());
+  const cafesWithDistance = cafes.map(cafe => ({
+    ...cafe,
+    distance: userLocation 
+      ? calculateDistance(userLocation.lat, userLocation.lng, cafe.lat, cafe.lng)
+      : undefined
+  })).sort((a, b) => (a.distance || 0) - (b.distance || 0));
 
-      const matchesFilters = filters.length === 0 || 
-        filters.every(filter => cafe.amenities.includes(filter));
-
-      const priceValue = parseFloat(cafe.price.replace('€', ''));
-      const matchesPrice = priceValue >= priceRange[0] && priceValue <= priceRange[1];
-
-      return matchesSearch && matchesFilters && matchesPrice;
-    });
-
-    if (userLocation) {
-      filteredCafes = filteredCafes.map(cafe => ({
-        ...cafe,
-        distance: calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          cafe.lat,
-          cafe.lng
-        )
-      })).sort((a, b) => (a.distance || 0) - (b.distance || 0));
-    }
-
-    setCafesWithDistance(filteredCafes);
-  }, [filters, searchTerm, priceRange, userLocation]);
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -74,6 +85,12 @@ const Search = () => {
         {cafesWithDistance.map((cafe) => (
           <SpaceCard key={cafe.id} {...cafe} />
         ))}
+        {cafesWithDistance.length === 0 && (
+          <div className="col-span-full text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-700">No spaces found</h3>
+            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
+          </div>
+        )}
       </div>
     </Layout>
   );
