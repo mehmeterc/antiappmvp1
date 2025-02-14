@@ -58,6 +58,7 @@ const Login = () => {
         console.log("User updated:", session?.user);
         setAuthError(null);
         toast.success("Profile updated successfully");
+        navigate('/reset-password', { replace: true });
       }
     });
 

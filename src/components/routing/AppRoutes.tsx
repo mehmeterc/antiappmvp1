@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -11,6 +12,7 @@ import History from "@/pages/History";
 import Messages from "@/pages/Messages";
 import Reviews from "@/pages/Reviews";
 import Login from "@/pages/Login";
+import ResetPassword from "@/pages/ResetPassword";
 import CafeDetails from "@/pages/CafeDetails";
 import CheckInStatus from "@/pages/CheckInStatus";
 import MerchantRegistration from "@/pages/MerchantRegistration";
@@ -52,6 +54,7 @@ export const AppRoutes = () => {
       <Route path="/login" element={
         session ? <Navigate to="/" replace /> : <Login />
       } />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cafe/:id" element={<CafeDetails />} />
       <Route path="/checkin-status/:id" element={
         <ProtectedRoute>
