@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -21,17 +22,19 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+    <React.StrictMode>
+      <SessionContextProvider supabaseClient={supabase}>
+        <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <AppContent />
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
           </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </SessionContextProvider>
+        </QueryClientProvider>
+      </SessionContextProvider>
+    </React.StrictMode>
   );
 };
 
