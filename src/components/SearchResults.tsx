@@ -43,7 +43,7 @@ export const SearchResults = memo(({
         </CommandGroup>
       )}
 
-      {aiRecommendations.length > 0 && searchTerm && (
+      {aiRecommendations.length > 0 && (
         <CommandGroup heading="You might also like" className="space-y-1">
           {aiRecommendations.map((recommendation, index) => (
             <CommandItem 

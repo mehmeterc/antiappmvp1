@@ -3,7 +3,6 @@ import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
 import { Search, Loader2 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface SearchInputProps {
   searchTerm: string;

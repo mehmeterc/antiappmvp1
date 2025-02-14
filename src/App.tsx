@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
@@ -23,17 +22,13 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <React.StrictMode>
-      <SessionContextProvider supabaseClient={supabase}>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <AppContent />
-            </TooltipProvider>
-          </BrowserRouter>
-        </QueryClientProvider>
-      </SessionContextProvider>
+      <BrowserRouter>
+        <SessionContextProvider supabaseClient={supabase}>
+          <QueryClientProvider client={queryClient}>
+            <AppContent />
+          </QueryClientProvider>
+        </SessionContextProvider>
+      </BrowserRouter>
     </React.StrictMode>
   );
 };
@@ -68,6 +63,8 @@ const AppContent = () => {
       <Navigation />
       <AppRoutes />
       <Footer />
+      <Toaster />
+      <Sonner />
     </div>
   );
 };
