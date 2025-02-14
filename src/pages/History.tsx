@@ -1,23 +1,25 @@
+
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format, parseISO, formatDistanceStrict } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Star, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface HistoryItem {
-  id: number;
-  deviceId?: string;
-  cafeId: string;
-  cafeName: string;
-  checkInTime: string;
-  checkOutTime?: string;
+  id: string;
+  cafe_id: string;
+  cafe_name: string;
+  check_in_time: string;
+  check_out_time?: string;
   status: 'Active' | 'Completed';
-  totalCost?: number;
+  total_cost?: number;
   review?: {
     rating: number;
     comment: string;
@@ -27,7 +29,7 @@ interface HistoryItem {
 
 const AddReviewDialog = ({ booking, onReviewSubmit }: { 
   booking: HistoryItem;
-  onReviewSubmit: (bookingId: number, rating: number, comment: string) => void;
+  onReviewSubmit: (bookingId: string, rating: number, comment: string) => void;
 }) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -39,7 +41,7 @@ const AddReviewDialog = ({ booking, onReviewSubmit }: {
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Review your visit to {booking.cafeName}</DialogTitle>
+        <DialogTitle>Review your visit to {booking.cafe_name}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4 pt-4">
         <div className="space-y-2">
@@ -78,91 +80,130 @@ const AddReviewDialog = ({ booking, onReviewSubmit }: {
 };
 
 const History = () => {
+  const session = useSession();
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const deviceId = localStorage.getItem('deviceId');
-      console.log("Current device ID:", deviceId);
-      
-      const storedHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
-      console.log("All stored history:", storedHistory);
-      
-      const relevantHistory = storedHistory.filter((item: HistoryItem) => 
-        !item.deviceId || item.deviceId === deviceId
-      );
-      
-      const sortedHistory = relevantHistory.sort((a: HistoryItem, b: HistoryItem) => 
-        new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
-      );
-      
-      setHistory(sortedHistory);
-    } catch (error) {
-      console.error("Error loading history:", error);
-      setHistory([]);
-    }
-  }, []);
+    const fetchHistory = async () => {
+      if (!session?.user?.id) return;
 
-  const handleReviewSubmit = (bookingId: number, rating: number, comment: string) => {
-    const updatedHistory = history.map(item => {
-      if (item.id === bookingId) {
-        return {
-          ...item,
-          review: {
-            rating,
-            comment,
-            date: new Date().toISOString()
-          }
-        };
+      try {
+        setIsLoading(true);
+        const { data: bookings, error: bookingsError } = await supabase
+          .from('booking_history')
+          .select('*')
+          .order('check_in_time', { ascending: false });
+
+        if (bookingsError) throw bookingsError;
+
+        // Fetch reviews for these bookings
+        const { data: reviews, error: reviewsError } = await supabase
+          .from('reviews')
+          .select('*')
+          .in('cafe_id', bookings?.map(b => b.cafe_id) || []);
+
+        if (reviewsError) throw reviewsError;
+
+        // Combine bookings with their reviews
+        const historyWithReviews = bookings?.map(booking => {
+          const review = reviews?.find(r => r.cafe_id === booking.cafe_id);
+          return {
+            ...booking,
+            review: review ? {
+              rating: review.rating,
+              comment: review.comment,
+              date: review.created_at
+            } : undefined
+          };
+        });
+
+        setHistory(historyWithReviews || []);
+      } catch (error) {
+        console.error("Error loading history:", error);
+        toast.error("Failed to load booking history");
+      } finally {
+        setIsLoading(false);
       }
-      return item;
-    });
+    };
 
-    localStorage.setItem('bookingHistory', JSON.stringify(updatedHistory));
-    setHistory(updatedHistory);
+    fetchHistory();
 
-    // Also update the cafe's reviews in BERLIN_CAFES
-    const storedCafes = JSON.parse(localStorage.getItem('BERLIN_CAFES') || '[]');
-    const updatedCafes = storedCafes.map((cafe: any) => {
-      if (cafe.id === bookingId.toString()) {
-        const newReview = {
-          id: `r${Date.now()}`,
-          userId: localStorage.getItem('deviceId') || 'anonymous',
-          userName: "Anonymous User",
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('booking_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_history'
+        },
+        () => {
+          fetchHistory(); // Refresh the data when changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
+
+  const handleReviewSubmit = async (bookingId: string, rating: number, comment: string) => {
+    if (!session?.user?.id) {
+      toast.error("Please log in to submit a review");
+      return;
+    }
+
+    const booking = history.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          cafe_id: booking.cafe_id,
+          user_id: session.user.id,
           rating,
-          comment,
-          date: new Date().toISOString()
-        };
-        return {
-          ...cafe,
-          reviews: [...(cafe.reviews || []), newReview]
-        };
-      }
-      return cafe;
-    });
+          comment
+        });
 
-    localStorage.setItem('BERLIN_CAFES', JSON.stringify(updatedCafes));
-    toast.success("Review submitted successfully!");
-  };
+      if (error) throw error;
 
-  const formatDateTime = (dateStr: string) => {
-    try {
-      return format(parseISO(dateStr), 'PPp');
+      toast.success("Review submitted successfully!");
+      
+      // Update local state
+      setHistory(prev => prev.map(item => {
+        if (item.id === bookingId) {
+          return {
+            ...item,
+            review: {
+              rating,
+              comment,
+              date: new Date().toISOString()
+            }
+          };
+        }
+        return item;
+      }));
     } catch (error) {
-      console.error("Error formatting date:", dateStr, error);
-      return "Invalid date";
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review");
     }
   };
 
-  const getDuration = (checkIn: string, checkOut?: string) => {
-    if (!checkOut) return "Ongoing";
-    try {
-      return formatDistanceStrict(parseISO(checkIn), parseISO(checkOut));
-    } catch (error) {
-      console.error("Error calculating duration:", error);
-      return "Unknown duration";
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Booking History</h1>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-500">Loading your booking history...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -179,10 +220,10 @@ const History = () => {
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">
                     <Link 
-                      to={`/cafe/${booking.cafeId}`}
+                      to={`/cafe/${booking.cafe_id}`}
                       className="hover:text-primary flex items-center gap-2"
                     >
-                      {booking.cafeName}
+                      {booking.cafe_name}
                       <ArrowUpRight className="w-4 h-4" />
                     </Link>
                   </CardTitle>
@@ -198,26 +239,20 @@ const History = () => {
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Check-in:</span>
-                      <span>{formatDateTime(booking.checkInTime)}</span>
+                      <span>{format(parseISO(booking.check_in_time), 'PPpp')}</span>
                     </div>
                     
-                    {booking.checkOutTime && (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Check-out:</span>
-                          <span>{formatDateTime(booking.checkOutTime)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Duration:</span>
-                          <span>{getDuration(booking.checkInTime, booking.checkOutTime)}</span>
-                        </div>
-                      </>
+                    {booking.check_out_time && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Check-out:</span>
+                        <span>{format(parseISO(booking.check_out_time), 'PPpp')}</span>
+                      </div>
                     )}
                     
-                    {booking.totalCost !== undefined && (
+                    {booking.total_cost !== undefined && (
                       <div className="flex justify-between font-medium mt-2 pt-2 border-t">
                         <span>Total Cost:</span>
-                        <span>{booking.totalCost.toFixed(2)}€</span>
+                        <span>{booking.total_cost.toFixed(2)}€</span>
                       </div>
                     )}
 
@@ -259,7 +294,7 @@ const History = () => {
                         </div>
                         <p className="text-sm text-gray-600">{booking.review.comment}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {formatDateTime(booking.review.date)}
+                          {format(parseISO(booking.review.date), 'PPpp')}
                         </p>
                       </div>
                     )}
