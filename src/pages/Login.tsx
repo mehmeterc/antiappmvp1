@@ -75,6 +75,8 @@ const Login = () => {
       errorMessage = "Invalid email or password. Please try again.";
     } else if (error.message.includes("Email not confirmed")) {
       errorMessage = "Please verify your email address before signing in.";
+    } else if (error.message.includes("rate limit")) {
+      errorMessage = "Too many login attempts. Please try again later.";
     }
     
     setAuthError(errorMessage);
