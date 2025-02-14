@@ -26,7 +26,7 @@ export const SearchInput = ({
         <CommandInput placeholder={isLoading ? "Loading suggestions..." : "Search for spaces near you..."} value={searchTerm} onValueChange={onSearchTermChange} className="flex-1 outline-none border-0 focus:ring-0 text-base placeholder:text-gray-400" />
         {isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-500 ml-2" />}
       </div>
-      <CommandList className="max-h-[300px] overflow-y-auto p-2">
+      <CommandList className="max-h-[300px] overflow-y-auto p-2 px-0">
         {!isLoading && searchTerm && suggestions.length === 0 && <CommandEmpty className="py-6 text-center">
             <p className="text-gray-600 mb-2">No exact matches found</p>
             <p className="text-sm text-gray-500">
