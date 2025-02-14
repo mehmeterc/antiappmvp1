@@ -27,6 +27,28 @@ interface HistoryItem {
   };
 }
 
+// Define the database response type
+interface BookingHistoryRow {
+  id: string;
+  cafe_id: string;
+  cafe_name: string;
+  check_in_time: string;
+  check_out_time: string | null;
+  status: string;
+  total_cost: number | null;
+  user_id: string;
+  created_at: string | null;
+}
+
+interface ReviewRow {
+  id: string;
+  cafe_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
 const AddReviewDialog = ({ booking, onReviewSubmit }: { 
   booking: HistoryItem;
   onReviewSubmit: (bookingId: string, rating: number, comment: string) => void;
@@ -105,11 +127,23 @@ const History = () => {
 
         if (reviewsError) throw reviewsError;
 
-        // Combine bookings with their reviews
-        const historyWithReviews = bookings?.map(booking => {
-          const review = reviews?.find(r => r.cafe_id === booking.cafe_id);
+        // Transform and validate the data to match HistoryItem type
+        const historyWithReviews: HistoryItem[] = (bookings as BookingHistoryRow[])?.map(booking => {
+          const review = (reviews as ReviewRow[])?.find(r => r.cafe_id === booking.cafe_id);
+          
+          // Ensure status is either 'Active' or 'Completed'
+          const validStatus = booking.status === 'Active' || booking.status === 'Completed' 
+            ? booking.status 
+            : 'Active';
+
           return {
-            ...booking,
+            id: booking.id,
+            cafe_id: booking.cafe_id,
+            cafe_name: booking.cafe_name,
+            check_in_time: booking.check_in_time,
+            check_out_time: booking.check_out_time || undefined,
+            status: validStatus,
+            total_cost: booking.total_cost || undefined,
             review: review ? {
               rating: review.rating,
               comment: review.comment,
