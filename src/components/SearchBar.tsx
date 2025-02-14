@@ -10,6 +10,7 @@ import { Cafe } from "@/types/cafe";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import Fuse from 'fuse.js';
 
 const fetchAllCafes = async () => {
   const { data: cafes, error } = await supabase
@@ -28,11 +29,10 @@ export const SearchBar = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(true); // Always show by default
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 12]);
 
-  // Fetch and cache all cafes
   const { data: allCafes = [], isLoading: isCafesLoading } = useQuery({
     queryKey: ['cafes'],
     queryFn: fetchAllCafes,
@@ -42,28 +42,30 @@ export const SearchBar = () => {
 
   const { aiRecommendations = [], isLoading: isAILoading } = useAIRecommendations(searchTerm);
 
-  // Simple, direct filtering logic
+  // Initialize Fuse.js for fuzzy search
+  const fuse = useMemo(() => new Fuse(allCafes, {
+    keys: ['title', 'description', 'address', 'tags', 'amenities'],
+    threshold: 0.3,
+    distance: 100,
+    includeScore: true
+  }), [allCafes]);
+
+  // Enhanced search with fuzzy matching
   const filteredSuggestions = useMemo(() => {
-    if (!allCafes) return [];
-    
-    // If no search term, show all cafes
     if (!searchTerm.trim()) {
-      return allCafes;
+      return [];
     }
 
-    const searchLower = searchTerm.toLowerCase().trim();
-    
-    // Simple text matching against all relevant fields
-    return allCafes.filter(cafe => {
-      return (
-        cafe.title.toLowerCase().includes(searchLower) ||
-        cafe.description.toLowerCase().includes(searchLower) ||
-        cafe.address.toLowerCase().includes(searchLower) ||
-        cafe.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-        cafe.amenities.some(amenity => amenity.toLowerCase().includes(searchLower))
-      );
-    });
-  }, [allCafes, searchTerm]);
+    const results = fuse.search(searchTerm);
+    return results
+      .filter(result => result.score && result.score < 0.6)
+      .map(result => result.item);
+  }, [fuse, searchTerm]);
+
+  const handleSearchTermChange = (value: string) => {
+    setSearchTerm(value);
+    setShowSuggestions(true);
+  };
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilters(prev => 
@@ -89,20 +91,13 @@ export const SearchBar = () => {
     });
   };
 
-  // Debug logging
-  console.log('Current suggestions:', {
-    searchTerm,
-    suggestionsCount: filteredSuggestions.length,
-    suggestions: filteredSuggestions.map(s => s.title)
-  });
-
   return (
     <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
-      <div className="flex gap-4 relative py-[7px]">
+      <div className="flex gap-4 relative">
         <div className="flex-1">
           <SearchInput
             searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
+            onSearchTermChange={handleSearchTermChange}
             showSuggestions={showSuggestions}
             suggestions={filteredSuggestions}
             aiRecommendations={aiRecommendations}
