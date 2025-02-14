@@ -83,6 +83,8 @@ const Login = () => {
     toast.error(errorMessage);
   };
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-primary/10 flex flex-col items-center justify-center px-4">
       <div className="mb-8 flex items-center gap-2">
@@ -123,7 +125,7 @@ const Login = () => {
           }}
           theme="light"
           providers={[]}
-          redirectTo={window.location.origin}
+          redirectTo={`${origin}/auth/callback`}
           onlyThirdPartyProviders={false}
         />
       </div>
