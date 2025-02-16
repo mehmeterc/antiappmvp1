@@ -1,4 +1,3 @@
-
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { User, LogIn, Search, BookMarked, Coffee, Menu, History, MessageSquare, Info, Star, Settings } from "lucide-react";
@@ -65,7 +64,7 @@ export const Navigation = () => {
   menuItems.push({ 
     label: "About", 
     icon: <Info className="h-4 w-4" />, 
-    path: "/" 
+    path: "/about" 
   });
 
   const handleLogout = async () => {
@@ -87,7 +86,7 @@ export const Navigation = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-md py-4 z-50">
       <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/home")}>
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
           <Coffee className="h-6 w-6 text-primary" />
           <span className="text-xl font-bold">AntiApp</span>
         </div>

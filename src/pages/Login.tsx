@@ -72,13 +72,12 @@ const Login = () => {
     console.error("Auth error:", error);
     let errorMessage = "An error occurred during authentication";
     
-    // More specific error messages based on the error response
     if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "The email or password you entered is incorrect. Please try again.";
+      errorMessage = "Invalid email or password. Please try again.";
     } else if (error.message.includes("Email not confirmed")) {
       errorMessage = "Please verify your email address before signing in.";
     } else if (error.message.includes("rate limit")) {
-      errorMessage = "Too many login attempts. Please try again in a few minutes.";
+      errorMessage = "Too many login attempts. Please try again later.";
     }
     
     setAuthError(errorMessage);
@@ -123,8 +122,6 @@ const Login = () => {
               button: 'w-full px-4 py-2 rounded-lg font-medium',
               input: 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary',
               label: 'text-sm font-medium text-gray-700',
-              message: 'text-sm text-red-600 mt-1',
-              loader: 'text-primary'
             }
           }}
           theme="light"

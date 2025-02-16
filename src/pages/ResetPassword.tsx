@@ -29,11 +29,12 @@ const ResetPassword = () => {
           setStatus('success');
           // Log the successful password reset
           await supabase
-            .from('page_views')
+            .from('user_events')
             .insert([{ 
-              page_name: 'password_reset_success',
-              visitor_id: data.session.user.id 
-            }]);
+              event_type: 'password_reset',
+              user_id: data.session.user.id 
+            }])
+            .single();
         } else {
           setStatus('error');
           setErrorMessage("No active session found. Please try resetting your password again.");

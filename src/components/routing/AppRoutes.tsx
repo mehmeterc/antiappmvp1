@@ -4,7 +4,6 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { MerchantRoute } from "./MerchantRoute";
 import { AdminRoute } from "./AdminRoute";
-import Landing from "@/pages/Landing";
 import Index from "@/pages/Index";
 import Search from "@/pages/Search";
 import Profile from "@/pages/Profile";
@@ -25,8 +24,7 @@ export const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/home" element={<Index />} />
+      <Route path="/" element={<Index />} />
       <Route path="/search" element={<Search />} />
       <Route path="/profile" element={
         <ProtectedRoute>
@@ -54,7 +52,7 @@ export const AppRoutes = () => {
         </ProtectedRoute>
       } />
       <Route path="/login" element={
-        session ? <Navigate to="/home" replace /> : <Login />
+        session ? <Navigate to="/" replace /> : <Login />
       } />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cafe/:id" element={<CafeDetails />} />
