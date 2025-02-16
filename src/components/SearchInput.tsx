@@ -19,13 +19,39 @@ export const SearchInput = ({
   onSearchTermChange,
   showSuggestions = false,
   suggestions = [],
-  aiRecommendations = [], // Ensure default value
+  aiRecommendations = [],
   onCafeSelect,
   isLoading = false
 }: SearchInputProps) => {
-  // Ensure suggestions and aiRecommendations are arrays
+  // Ensure we have valid arrays
   const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
   const safeAiRecommendations = Array.isArray(aiRecommendations) ? aiRecommendations : [];
+
+  const renderSuggestions = () => {
+    if (!showSuggestions || !searchTerm) {
+      return null;
+    }
+
+    return (
+      <CommandList className="max-h-[300px] overflow-y-auto p-2">
+        {!isLoading && safeSuggestions.length === 0 && (
+          <CommandEmpty className="py-6 text-center">
+            <p className="text-gray-600 mb-2">No exact matches found</p>
+            <p className="text-sm text-gray-500">
+              Try searching for a different location or browse our popular spaces
+            </p>
+          </CommandEmpty>
+        )}
+        {safeSuggestions.length > 0 && (
+          <SearchResults 
+            suggestions={safeSuggestions} 
+            aiRecommendations={safeAiRecommendations} 
+            onCafeSelect={onCafeSelect} 
+          />
+        )}
+      </CommandList>
+    );
+  };
 
   return (
     <Command className="rounded-lg border shadow-md w-full" shouldFilter={false}>
@@ -38,25 +64,7 @@ export const SearchInput = ({
         />
         {isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-500 ml-2" />}
       </div>
-      {showSuggestions && searchTerm && (
-        <CommandList className="max-h-[300px] overflow-y-auto p-2">
-          {!isLoading && safeSuggestions.length === 0 && (
-            <CommandEmpty className="py-6 text-center">
-              <p className="text-gray-600 mb-2">No exact matches found</p>
-              <p className="text-sm text-gray-500">
-                Try searching for a different location or browse our popular spaces
-              </p>
-            </CommandEmpty>
-          )}
-          {safeSuggestions.length > 0 && (
-            <SearchResults 
-              suggestions={safeSuggestions} 
-              aiRecommendations={safeAiRecommendations} 
-              onCafeSelect={onCafeSelect} 
-            />
-          )}
-        </CommandList>
-      )}
+      {renderSuggestions()}
     </Command>
   );
 };
