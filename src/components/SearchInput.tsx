@@ -26,12 +26,11 @@ export const SearchInput = ({
   return (
     <Command className="rounded-lg border shadow-md w-full" shouldFilter={false}>
       <div className="flex items-center border-0 px-4">
-        <Search className="h-4 w-4 text-gray-400 shrink-0" />
         <CommandInput 
           placeholder={isLoading ? "Loading suggestions..." : "Search for spaces near you..."} 
           value={searchTerm} 
           onValueChange={onSearchTermChange} 
-          className="flex-1 outline-none border-0 focus:ring-0 text-base placeholder:text-gray-400 h-12 pl-2" 
+          className="flex-1 outline-none border-0 focus:ring-0 text-base placeholder:text-gray-400 h-12" 
         />
         {isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-500 ml-2" />}
       </div>
