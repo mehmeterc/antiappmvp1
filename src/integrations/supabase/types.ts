@@ -222,6 +222,33 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          id: string
+          page_name: string
+          referrer: string | null
+          session_id: string | null
+          timestamp: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          id?: string
+          page_name: string
+          referrer?: string | null
+          session_id?: string | null
+          timestamp?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          id?: string
+          page_name?: string
+          referrer?: string | null
+          session_id?: string | null
+          timestamp?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"] | null
