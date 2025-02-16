@@ -11,16 +11,20 @@ interface SearchResultsProps {
 }
 
 export const SearchResults = memo(({
-  suggestions,
-  aiRecommendations,
+  suggestions = [], // Add default value
+  aiRecommendations = [], // Add default value
   onCafeSelect,
 }: SearchResultsProps) => {
+  // Ensure arrays are valid
+  const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+  const safeAiRecommendations = Array.isArray(aiRecommendations) ? aiRecommendations : [];
+
   return (
     <div className="space-y-4">
       {/* Suggestions Section */}
-      {suggestions.length > 0 && (
+      {safeSuggestions.length > 0 && (
         <CommandGroup heading="Spaces" className="space-y-1">
-          {suggestions.slice(0, 8).map((cafe) => (
+          {safeSuggestions.slice(0, 8).map((cafe) => (
             <CommandItem
               key={cafe.id}
               value={cafe.title}
@@ -44,19 +48,19 @@ export const SearchResults = memo(({
               )}
             </CommandItem>
           ))}
-          {suggestions.length > 8 && (
+          {safeSuggestions.length > 8 && (
             <CommandItem className="text-sm text-gray-500 italic px-4">
-              + {suggestions.length - 8} more spaces available
+              + {safeSuggestions.length - 8} more spaces available
             </CommandItem>
           )}
         </CommandGroup>
       )}
 
       {/* Similar Spaces Section */}
-      {suggestions.length > 0 && aiRecommendations.length > 0 && (
+      {safeSuggestions.length > 0 && safeAiRecommendations.length > 0 && (
         <CommandGroup heading="Similar Spaces" className="space-y-1">
-          {suggestions
-            .filter(cafe => aiRecommendations.includes(cafe.id))
+          {safeSuggestions
+            .filter(cafe => safeAiRecommendations.includes(cafe.id))
             .slice(0, 3)
             .map((cafe) => (
               <CommandItem

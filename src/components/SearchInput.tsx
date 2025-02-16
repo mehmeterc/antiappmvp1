@@ -2,7 +2,7 @@
 import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
-import { Search, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface SearchInputProps {
   searchTerm: string;
@@ -19,10 +19,14 @@ export const SearchInput = ({
   onSearchTermChange,
   showSuggestions = false,
   suggestions = [],
-  aiRecommendations = [],
+  aiRecommendations = [], // Ensure default value
   onCafeSelect,
   isLoading = false
 }: SearchInputProps) => {
+  // Ensure suggestions and aiRecommendations are arrays
+  const safeSuggestions = Array.isArray(suggestions) ? suggestions : [];
+  const safeAiRecommendations = Array.isArray(aiRecommendations) ? aiRecommendations : [];
+
   return (
     <Command className="rounded-lg border shadow-md w-full" shouldFilter={false}>
       <div className="flex items-center border-0 px-4">
@@ -36,7 +40,7 @@ export const SearchInput = ({
       </div>
       {showSuggestions && searchTerm && (
         <CommandList className="max-h-[300px] overflow-y-auto p-2">
-          {!isLoading && suggestions.length === 0 && (
+          {!isLoading && safeSuggestions.length === 0 && (
             <CommandEmpty className="py-6 text-center">
               <p className="text-gray-600 mb-2">No exact matches found</p>
               <p className="text-sm text-gray-500">
@@ -44,10 +48,10 @@ export const SearchInput = ({
               </p>
             </CommandEmpty>
           )}
-          {suggestions.length > 0 && (
+          {safeSuggestions.length > 0 && (
             <SearchResults 
-              suggestions={suggestions} 
-              aiRecommendations={aiRecommendations} 
+              suggestions={safeSuggestions} 
+              aiRecommendations={safeAiRecommendations} 
               onCafeSelect={onCafeSelect} 
             />
           )}
