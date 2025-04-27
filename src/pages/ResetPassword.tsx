@@ -27,14 +27,19 @@ const ResetPassword = () => {
         if (data.session) {
           console.log("Password reset successful");
           setStatus('success');
-          // Log the successful password reset
-          await supabase
-            .from('user_events')
-            .insert([{ 
-              event_type: 'password_reset',
-              user_id: data.session.user.id 
-            }])
-            .single();
+          // Log the successful password reset - we'll use admin_logs table instead of user_events
+          try {
+            await supabase
+              .from('admin_logs')
+              .insert({
+                action: 'password_reset',
+                target_id: data.session.user.id,
+                table_name: 'auth.users'
+              });
+          } catch (logError) {
+            // Just log the error but don't affect the user experience
+            console.error("Failed to log password reset event:", logError);
+          }
         } else {
           setStatus('error');
           setErrorMessage("No active session found. Please try resetting your password again.");
