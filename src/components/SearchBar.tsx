@@ -92,8 +92,8 @@ export const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
-      <div className="flex gap-4 relative">
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-5">
+      <div className="flex gap-2 items-center">
         <div className="flex-1">
           <SearchInput
             searchTerm={searchTerm}
@@ -112,7 +112,7 @@ export const SearchBar = () => {
       </div>
 
       <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-        <CollapsibleContent>
+        <CollapsibleContent className="mt-4">
           <FilterOptions
             selectedFilters={selectedFilters}
             onFilterChange={handleFilterChange}

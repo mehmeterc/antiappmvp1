@@ -2,7 +2,7 @@
 import { Command, CommandInput, CommandList, CommandEmpty } from "./ui/command";
 import { SearchResults } from "./SearchResults";
 import { Cafe } from "@/types/cafe";
-import { Search, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface SearchInputProps {
   searchTerm: string;
@@ -26,12 +26,12 @@ export const SearchInput = ({
   return (
     <Command className="rounded-lg border shadow-sm w-full bg-white" shouldFilter={false}>
       <div className="flex items-center border-b px-4 py-2">
-        <Search className="h-5 w-5 shrink-0 text-muted-foreground/60" />
+        {/* Remove the duplicate Search icon - the CommandInput already has one */}
         <CommandInput 
           placeholder={isLoading ? "Loading suggestions..." : "Search for spaces near you..."} 
           value={searchTerm} 
           onValueChange={onSearchTermChange} 
-          className="flex-1 bg-transparent outline-none border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 px-3"
+          className="flex-1 bg-transparent outline-none border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60"
         />
         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/60" />}
       </div>
