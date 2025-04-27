@@ -24,18 +24,18 @@ export const SearchInput = ({
   isLoading = false
 }: SearchInputProps) => {
   return (
-    <Command className="rounded-lg border shadow-md w-full bg-white" shouldFilter={false}>
-      <div className="flex items-center gap-2 border-b px-3 py-2">
-        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+    <Command className="rounded-lg border shadow-sm w-full bg-white" shouldFilter={false}>
+      <div className="flex items-center border-b px-4 py-2">
+        <Search className="h-5 w-5 shrink-0 text-muted-foreground/60" />
         <CommandInput 
           placeholder={isLoading ? "Loading suggestions..." : "Search for spaces near you..."} 
           value={searchTerm} 
           onValueChange={onSearchTermChange} 
-          className="w-full bg-transparent outline-none border-0 focus:ring-0 text-base placeholder:text-muted-foreground p-0"
+          className="flex-1 bg-transparent outline-none border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 px-3"
         />
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/60" />}
       </div>
-      <CommandList className="max-h-[300px] overflow-y-auto p-2">
+      <CommandList className="max-h-[300px] overflow-y-auto px-2 py-3">
         {!isLoading && searchTerm && suggestions.length === 0 && (
           <CommandEmpty className="py-6 text-center">
             <p className="text-gray-600 mb-2">No exact matches found</p>
