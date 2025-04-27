@@ -2,13 +2,20 @@ import Fuse from 'fuse.js';
 import { Cafe } from '@/types/cafe';
 
 const fuseOptions = {
-  keys: ['title', 'description', 'address', 'tags', 'amenities'],
-  threshold: 0.3,
-  distance: 100,
+  keys: [
+    { name: 'title', weight: 2 },
+    { name: 'address', weight: 1.5 },
+    { name: 'description', weight: 0.7 },
+    { name: 'tags', weight: 0.5 },
+    { name: 'amenities', weight: 0.3 }
+  ],
+  threshold: 0.4,
+  distance: 50,
   includeScore: true,
   useExtendedSearch: true,
-  ignoreLocation: true,
+  ignoreLocation: false,
   shouldSort: true,
+  minMatchCharLength: 2
 };
 
 const fuse = new Fuse([], fuseOptions);
@@ -56,7 +63,7 @@ export const searchCafes = (
     aiRecommendationsCount: aiRecommendations.length
   });
   
-  // First, filter by price range and amenities
+  // First, apply exact filters
   let filteredCafes = cafes.filter(cafe => {
     const price = parseFloat(cafe.price);
     const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
@@ -72,16 +79,28 @@ export const searchCafes = (
     return filteredCafes;
   }
 
-  // Update Fuse instance with filtered cafes
+  // Check for direct title matches first (for best results)
+  const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+  const titleMatches = filteredCafes.filter(cafe => 
+    cafe.title.toLowerCase().includes(normalizedSearchTerm)
+  );
+  
+  // If we have good title matches, prioritize those
+  if (titleMatches.length > 0) {
+    console.log('Found direct title matches:', titleMatches.length);
+    return titleMatches;
+  }
+  
+  // Otherwise perform fuzzy search
   fuse.setCollection(filteredCafes);
-
-  // Perform fuzzy search
   const searchResults = fuse.search(searchTerm);
+  
+  // Filter to only high-quality matches
   const results = searchResults
-    .filter(result => result.score && result.score < 0.6)
+    .filter(result => result.score && result.score < 0.5)
     .map(result => result.item);
 
-  // Include AI recommendations
+  // Include AI recommendations that weren't already found
   const recommendedCafes = filteredCafes.filter(cafe => 
     aiRecommendations.includes(cafe.id) && 
     !results.find(r => r.id === cafe.id)

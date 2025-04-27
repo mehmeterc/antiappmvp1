@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { SpaceCard } from "@/components/SpaceCard";
 import { useLocation } from "react-router-dom";
@@ -19,8 +18,22 @@ const Search = () => {
     queryFn: async () => {
       let query = supabase.from('cafes').select('*');
 
-      // Apply text search if there's a search term
+      // Apply text search with prioritization if there's a search term
       if (searchTerm.length > 0) {
+        const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+        
+        // First try exact title matches for more accuracy
+        const { data: titleMatches } = await supabase
+          .from('cafes')
+          .select('*')
+          .ilike('title', `%${normalizedSearchTerm}%`);
+          
+        if (titleMatches && titleMatches.length > 0) {
+          console.log('Found exact title matches:', titleMatches.length);
+          return titleMatches;
+        }
+        
+        // Otherwise, search more broadly
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
       }
       

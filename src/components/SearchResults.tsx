@@ -43,16 +43,29 @@ export const SearchResults = memo(({
         </CommandGroup>
       )}
 
-      {aiRecommendations.length > 0 && (
+      {aiRecommendations.length > 0 && suggestions.length > 0 && (
         <CommandGroup heading="You might also like" className="space-y-1">
-          {aiRecommendations.map((recommendation, index) => (
-            <CommandItem 
-              key={index} 
-              className="text-sm text-gray-600 px-4 py-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
-            >
-              {recommendation}
-            </CommandItem>
-          ))}
+          {aiRecommendations.slice(0, 3).map((recommendationId, index) => {
+            // Find corresponding cafe from all cafes
+            const recommendedCafe = suggestions.find(cafe => cafe.id === recommendationId);
+            if (!recommendedCafe) return null;
+            
+            return (
+              <CommandItem 
+                key={index} 
+                className="text-sm px-4 py-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                onSelect={() => onCafeSelect(recommendedCafe.id)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">{recommendedCafe.title}</div>
+                  <div className="flex items-center text-sm text-gray-500 mt-0.5">
+                    <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">{recommendedCafe.address}</span>
+                  </div>
+                </div>
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
       )}
     </div>

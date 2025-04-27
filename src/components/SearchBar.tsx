@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
@@ -42,25 +41,51 @@ export const SearchBar = () => {
 
   const { aiRecommendations = [], isLoading: isAILoading } = useAIRecommendations(searchTerm);
 
-  // Initialize Fuse.js for fuzzy search
+  // Enhanced Fuse.js configuration for better search results
   const fuse = useMemo(() => new Fuse(allCafes, {
-    keys: ['title', 'description', 'address', 'tags', 'amenities'],
-    threshold: 0.3,
-    distance: 100,
-    includeScore: true
+    keys: [
+      { name: 'title', weight: 2 },
+      { name: 'address', weight: 1.5 },
+      { name: 'description', weight: 0.7 },
+      { name: 'tags', weight: 0.5 },
+      { name: 'amenities', weight: 0.3 }
+    ],
+    threshold: 0.4, // Lower threshold for stricter matching
+    distance: 50,   // Shorter distance for more exact matches
+    includeScore: true,
+    ignoreLocation: false, // Consider location in string when matching
+    useExtendedSearch: true,
+    minMatchCharLength: 2 // Require at least 2 characters to match
   }), [allCafes]);
 
-  // Enhanced search with fuzzy matching
+  // Improved search with more accurate matching
   const filteredSuggestions = useMemo(() => {
     if (!searchTerm.trim()) {
       return [];
     }
 
-    const results = fuse.search(searchTerm);
+    // Normalize search term for better matching
+    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    
+    // First check for exact or near-exact matches in title (for best results)
+    const titleMatches = allCafes.filter(cafe => 
+      cafe.title.toLowerCase().includes(normalizedSearchTerm)
+    );
+    
+    // If we have good title matches, prioritize those
+    if (titleMatches.length > 0) {
+      return titleMatches;
+    }
+    
+    // Otherwise, fall back to fuzzy search
+    const results = fuse.search(normalizedSearchTerm);
+    
+    // Filter results with higher quality matches
     return results
-      .filter(result => result.score && result.score < 0.6)
-      .map(result => result.item);
-  }, [fuse, searchTerm]);
+      .filter(result => result.score && result.score < 0.5) // Only include good matches
+      .map(result => result.item)
+      .slice(0, 8); // Limit to top 8 results
+  }, [fuse, searchTerm, allCafes]);
 
   const handleSearchTermChange = (value: string) => {
     setSearchTerm(value);
