@@ -50,8 +50,8 @@ export const SearchBar = () => {
       { name: 'tags', weight: 0.5 },
       { name: 'amenities', weight: 0.3 }
     ],
-    threshold: 0.4, // Lower threshold for stricter matching
-    distance: 50,   // Shorter distance for more exact matches
+    threshold: 0.3, // Stricter matching
+    distance: 30,   // More exact matches
     includeScore: true,
     ignoreLocation: false, // Consider location in string when matching
     useExtendedSearch: true,
@@ -81,10 +81,20 @@ export const SearchBar = () => {
     const results = fuse.search(normalizedSearchTerm);
     
     // Filter results with higher quality matches
-    return results
-      .filter(result => result.score && result.score < 0.5) // Only include good matches
-      .map(result => result.item)
-      .slice(0, 8); // Limit to top 8 results
+    const items = results
+      .filter(result => result.score !== undefined && result.score < 0.5)
+      .map(result => result.item as Cafe);
+    const matchesNormalized = items.filter(cafe => {
+      const fields = [
+        cafe.title,
+        cafe.address,
+        cafe.description,
+        ...(cafe.tags || []),
+        ...(cafe.amenities || [])
+      ].join(' ').toLowerCase();
+      return fields.includes(normalizedSearchTerm);
+    });
+    return matchesNormalized.slice(0, 8);
   }, [fuse, searchTerm, allCafes]);
 
   const handleSearchTermChange = (value: string) => {

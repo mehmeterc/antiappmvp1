@@ -9,8 +9,8 @@ const fuseOptions = {
     { name: 'tags', weight: 0.5 },
     { name: 'amenities', weight: 0.3 }
   ],
-  threshold: 0.4,
-  distance: 50,
+  threshold: 0.3,
+  distance: 30,
   includeScore: true,
   useExtendedSearch: true,
   ignoreLocation: false,
@@ -97,16 +97,29 @@ export const searchCafes = (
   
   // Filter to only high-quality matches
   const results = searchResults
-    .filter(result => result.score && result.score < 0.5)
-    .map(result => result.item);
+    .filter(result => result.score !== undefined && result.score < 0.5)
+    .map(result => result.item as Cafe);
+
+  // Post-filter to ensure strict normalized inclusion
+  const normalizedFilter = normalizeText(searchTerm);
+  const strictResults = results.filter(cafe => {
+    const text = normalizeText([
+      cafe.title,
+      cafe.address,
+      cafe.description,
+      ...(cafe.tags || []),
+      ...(cafe.amenities || [])
+    ].join(' '));
+    return text.includes(normalizedFilter);
+  });
 
   // Include AI recommendations that weren't already found
   const recommendedCafes = filteredCafes.filter(cafe => 
     aiRecommendations.includes(cafe.id) && 
-    !results.find(r => r.id === cafe.id)
+    !strictResults.find(r => r.id === cafe.id)
   );
 
-  const finalResults = [...results, ...recommendedCafes];
+  const finalResults = [...strictResults, ...recommendedCafes];
   console.log('Final search results:', finalResults.length);
 
   return finalResults;

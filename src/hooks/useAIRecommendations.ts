@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { analyzeSearchTerm } from "@/utils/aiUtils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useAIRecommendations = (searchTerm: string) => {
@@ -22,9 +22,11 @@ export const useAIRecommendations = (searchTerm: string) => {
         console.log("Search term analysis:", analysis);
         
         // Fetch cafes from Supabase based on analysis
+        const normalized = searchTerm.toLowerCase().trim();
         const { data: cafes, error } = await supabase
           .from('cafes')
           .select('id')
+          .ilike('title', `%${normalized}%`)
           .limit(5);
 
         if (error) {
